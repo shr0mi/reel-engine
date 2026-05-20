@@ -4,10 +4,26 @@ from datetime import timedelta
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 from faster_whisper import WhisperModel
+from fastapi.middleware.cors import CORSMiddleware
 import io
 
 # Initialize the FastAPI app
 app = FastAPI()
+
+# Handle CORS issues
+origins = [
+    "http://localhost:5173",      # Your Vite dev server
+    "http://127.0.0.1:5173",      # Sometimes needed
+    "http://localhost",           # Extra safety
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,        # You can use ["*"] for quick testing (not recommended for production)
+    allow_credentials=True,       # Important if you use cookies or auth later
+    allow_methods=["*"],          # Allow GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],          # Allow all headers (like Content-Type)
+)
 
 # A simple GET endpoint for testing
 @app.get("/")
@@ -19,7 +35,9 @@ def read_root():
 
 # Create a permanent storage directory for your videos
 UPLOAD_DIR = "stored_videos"
+UPLOAD_SRT = "stored_srt"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(UPLOAD_SRT, exist_ok=True)
 
 # Initialize Faster-Whisper. 
 # Using "small" for speed/efficiency on 16GB RAM. 
@@ -46,7 +64,9 @@ async def transcribe_video(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Uploaded file must be a video.")
 
     # 2. Save the video file permanently
-    video_path = os.path.join(UPLOAD_DIR, file.filename)
+    ext = os.path.splitext(file.filename)[1] # get the file extension (e.g., .mp4, .mkv)
+    #print(ext)
+    video_path = os.path.join(UPLOAD_DIR, f"video{ext}")
     try:
         with open(video_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -73,6 +93,15 @@ async def transcribe_video(file: UploadFile = File(...)):
         # This converts our raw string into a byte stream for FastAPI to send over HTTP
         file_stream = io.BytesIO(full_srt_string.encode("utf-8"))
         srt_filename = f"{os.path.splitext(file.filename)[0]}.srt"
+
+        # Store SRT permanently
+        srt_path = os.path.join(UPLOAD_SRT, "video.srt")
+        try:
+            # Open in text mode ("w") with utf-8 encoding to save the string directly
+            with open(srt_path, "w", encoding="utf-8") as buffer:
+                buffer.write(full_srt_string)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save SRT: {str(e)}")
 
         return StreamingResponse(
             file_stream,

@@ -12,7 +12,7 @@ function App() {
     <>
       <SidebarProvider>
       <AppSidebar />
-      <main>
+      <main className="flex-1 w-full min-h-screen">
         <SidebarTrigger />
         {/* Routes */}
           <Routes>
