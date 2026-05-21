@@ -14,7 +14,7 @@ function App() {
       <AppSidebar />
       <main className="flex-1 w-full min-h-screen">
         <SidebarTrigger />
-        {/* Routes */}
+        {/* Routes  */}
           <Routes>
             <Route path="/" element={<OverviewPage />} />
             <Route path="/transcribe" element={<TranscribeVideoPage />} />

@@ -19,7 +19,7 @@ export default function TranscribeVideoPage() {
             setStatus("error");
             return;
         }
-        
+        console.log(selectedFile);
         setFile(selectedFile);
         setStatus("idle");
         setErrorMessage("");

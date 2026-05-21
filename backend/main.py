@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import timedelta
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from faster_whisper import WhisperModel
 from fastapi.middleware.cors import CORSMiddleware
 import io
@@ -10,16 +10,9 @@ import io
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Handle CORS issues
-origins = [
-    "http://localhost:5173",      # Your Vite dev server
-    "http://127.0.0.1:5173",      # Sometimes needed
-    "http://localhost",           # Extra safety
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # You can use ["*"] for quick testing (not recommended for production)
+    allow_origins=["*"],        # You can use ["*"] for quick testing (not recommended for production)
     allow_credentials=True,       # Important if you use cookies or auth later
     allow_methods=["*"],          # Allow GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],          # Allow all headers (like Content-Type)
@@ -112,3 +105,15 @@ async def transcribe_video(file: UploadFile = File(...)):
     except Exception as e:
         # If transcription fails, we still kept the video, but we should inform the user
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+    
+
+# Send video file to frontend
+@app.get("/api/video")
+async def get_video():
+    video_path = os.path.join(UPLOAD_DIR, "video.mp4")  # get video from stored_videos
+    # Verify the file actually exists to avoid a 500 error
+    if not os.path.exists(video_path):
+        return {"error": "Video file not found"}, 404
+    
+    # FileResponse automatically handles HTTP Range requests required for video player scrubbing
+    return FileResponse(video_path, media_type="video/mp4")
