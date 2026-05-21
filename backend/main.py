@@ -6,6 +6,8 @@ from fastapi.responses import StreamingResponse, FileResponse
 from faster_whisper import WhisperModel
 from fastapi.middleware.cors import CORSMiddleware
 import io
+import srt
+from pathlib import Path
 
 # Initialize the FastAPI app
 app = FastAPI()
@@ -117,3 +119,53 @@ async def get_video():
     
     # FileResponse automatically handles HTTP Range requests required for video player scrubbing
     return FileResponse(video_path, media_type="video/mp4")
+
+
+# We will first format the SRT into our preferred JSON structure on the backend, then send that to the frontend for easier handling
+srt_file_path = Path(os.path.join(UPLOAD_SRT, "video.srt"))
+@app.get("/api/captions")
+def get_parsed_captions():
+    if not os.path.exists(srt_file_path):
+        return {"error": "SRT file not found"}, 404
+    
+    try:
+        # 2. Read the raw SRT file content
+        srt_content = srt_file_path.read_text(encoding="utf-8")
+        
+        # 3. Parse it into a generator using the srt library
+        parsed_subtitle_generator = srt.parse(srt_content)
+        
+        segments = []
+        for sub in parsed_subtitle_generator:
+            # Convert timedelta objects directly into total seconds as a float
+            start_seconds = sub.start.total_seconds()
+            end_seconds = sub.end.total_seconds()
+            
+            # Clean up the text (remove unnecessary newlines introduced by raw SRT)
+            clean_text = sub.content.replace("\n", " ").strip()
+            
+            segments.append({
+                "id": sub.index,
+                "start": round(start_seconds, 3),
+                "end": round(end_seconds, 3),
+                "text": clean_text
+            })
+            
+        # 4. Construct the complete response format with default global design values
+        payload = {
+            "videoUrl": "http://localhost:8000/static/video.mp4", # Fallback or static reference
+            "globalStyles": {
+                "fontFamily": "Impact",
+                "fontSize": 40,
+                "primaryColor": "#FFFF00",
+                "strokeColor": "#000000",
+                "strokeWidth": 4,
+                "positionY": 75  # 75% down the screen by default
+            },
+            "segments": segments
+        }
+        
+        return payload
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to parse SRT file: {str(e)}")
