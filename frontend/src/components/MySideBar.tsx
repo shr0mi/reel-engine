@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-import { Video, Captions, View } from "lucide-react"
+import { Video, Captions, View, Download } from "lucide-react"
 
 const menuItems = [
   {
@@ -28,6 +28,11 @@ const menuItems = [
     title: "Generate Captions",
     url: "/caption",
     icon: Captions,
+  },
+  {
+    title: "Render Video",
+    url: "/render",
+    icon: Download,
   },
 ]
 

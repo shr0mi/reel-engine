@@ -42,15 +42,13 @@ print(f"Loading Whisper model ({MODEL_SIZE})...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 print("Model loaded successfully!")
 
-def format_srt_time(seconds: float) -> str:
-    """Converts seconds into SRT timestamp format: HH:MM:SS,mmm"""
-    td = timedelta(seconds=seconds)
-    total_seconds = int(td.total_seconds())
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
-    secs = total_seconds % 60
-    milliseconds = int((seconds - total_seconds) * 1000)
-    return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
+# Function to format time for SRT (HH:MM:SS,mmm)
+def format_srt_time(seconds):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds % 1) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
 
 @app.post("/transcribe/")
 async def transcribe_video(file: UploadFile = File(...)):
@@ -71,16 +69,41 @@ async def transcribe_video(file: UploadFile = File(...)):
     try:
         # 3. Run Faster-Whisper transcription directly on the saved video path
         # (Whisper internally extracts the audio track using ffmpeg bindings)
-        segments, info = model.transcribe(video_path, beam_size=5)
+        segments, info = model.transcribe(
+            video_path,
+            word_timestamps=True,
+            condition_on_previous_text=False
+        )
 
         # 4. Build the SRT file structure in memory
         srt_content = []
-        for i, segment in enumerate(segments, start=1):
-            start_time = format_srt_time(segment.start)
-            end_time = format_srt_time(segment.end)
-            text = segment.text.strip()
+        max_words_per_caption = 3
+        srt_index = 1
+
+        for segment in segments:
+            words = list(segment.words)
+            if not words:
+                continue
+
+            # Chunk them into max_words_per_caption
+            for i in range(0, len(words), max_words_per_caption):
+                chunk_words = words[i:i + max_words_per_caption]
+
+                start_time = format_srt_time(chunk_words[0].start)
+                end_time = format_srt_time(chunk_words[-1].end)
+
+                # Clean up double spacing by stripping individual tokens before joining
+                text = " ".join(word.word.strip() for word in chunk_words).strip()
+
+                srt_content.append(f"{srt_index}\n{start_time} --> {end_time}\n{text}\n\n")
+                srt_index += 1
+
+        # for i, segment in enumerate(segments, start=1):
+        #     start_time = format_srt_time(segment.start)
+        #     end_time = format_srt_time(segment.end)
+        #     text = segment.text.strip()
             
-            srt_content.append(f"{i}\n{start_time} --> {end_time}\n{text}\n\n")
+        #     srt_content.append(f"{i}\n{start_time} --> {end_time}\n{text}\n\n")
 
         full_srt_string = "".join(srt_content)
 

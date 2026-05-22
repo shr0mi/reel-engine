@@ -1,4 +1,6 @@
 import {useEffect, useState, useRef} from "react";
+import { Slider } from "@/components/ui/slider"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 // Types matching your FastAPI JSON structure
 interface CaptionSegment {
@@ -67,54 +69,151 @@ export default function VideoPlayer() {
     const { globalStyles } = captionData;
 
     return (
-    <div className="max-w-[400px]">
-      {/* 
-        The parent container MUST be relative. 
-        This keeps the caption element bounded inside the video dimensions.
-      */}
-      <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
-        
-        {/* HTML5 Video Source Engine */}
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          controls
-          autoPlay
-          muted
-          width="100%"
-          onTimeUpdate={handleTimeUpdate}
-          className="block w-full"
-        >
-          Your browser does not support the video tag.
-        </video>
-
+      <div className="flex gap-[20px]" items-start>
+      <div className="max-w-[400px]">
         {/* 
-          Caption Layer Engine:
-          Positions text dynamically using globalStyles values coming straight out of state.
+          The parent container MUST be relative. 
+          This keeps the caption element bounded inside the video dimensions.
         */}
-        {currentText && (
-          <div
-            className="absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75"
-            style={{
-              top: `${globalStyles.positionY}%`,
-              fontFamily: globalStyles.fontFamily,
-              fontSize: `${globalStyles.fontSize}px`,
-              color: globalStyles.primaryColor,
-              fontWeight: "black",
-              textTransform: "uppercase",
-              // Simulating standard TikTok text stroke using CSS text-shadow
-              textShadow: `
-                -${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},  
-                 ${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
-                -${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
-                 ${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor}
-              `,
-            }}
+        <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
+          
+          {/* HTML5 Video Source Engine */}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            controls
+            autoPlay
+            muted
+            width="100%"
+            onTimeUpdate={handleTimeUpdate}
+            className="block w-full"
           >
-            {currentText}
-          </div>
-        )}
+            Your browser does not support the video tag.
+          </video>
+
+          {/* 
+            Caption Layer Engine:
+            Positions text dynamically using globalStyles values coming straight out of state.
+          */}
+          {currentText && (
+            <div
+              className="absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75"
+              style={{
+                top: `${globalStyles.positionY}%`,
+                fontFamily: globalStyles.fontFamily,
+                fontSize: `${globalStyles.fontSize}px`,
+                color: globalStyles.primaryColor,
+                fontWeight: "black",
+                textTransform: "uppercase",
+                // Simulating standard TikTok text stroke using CSS text-shadow
+                //WebkitTextStroke: '3px black',
+                textShadow: `
+                  -${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},  
+                  ${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
+                  -${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
+                  ${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor}
+                `,
+              }}
+            >
+              {currentText}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+          <div className="flex flex-col gap-[20px]">
+            {/* Caption Position Control */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Caption Position</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Slider
+                // Use value instead of defaultValue so it stays in sync with your state
+                value={[captionData?.globalStyles.positionY ?? 75]} 
+                max={100}
+                step={1}
+                className="w-[200px]"
+                onValueChange={(values) => {
+                  // Grab the first value from the array
+                  const newY = values[0]; 
+                  
+                  setCaptionData((prev) => {
+                    // If there's no data yet, just return null
+                    if (!prev) return null; 
+                    
+                    return {
+                      ...prev,
+                      globalStyles: {
+                        ...prev.globalStyles,
+                        positionY: newY, // Update just the positionY
+                      },
+                    };
+                  });
+                }}
+              />
+              </CardContent>
+            </Card>
+
+            {/* Control Font Size */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Caption Font Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Slider
+                // Use value instead of defaultValue so it stays in sync with your state
+                value={[captionData?.globalStyles.fontSize ?? 40]} 
+                max={50}
+                step={1}
+                className="w-[200px]"
+                onValueChange={(values) => {
+                  // Grab the first value from the array
+                  const newFontSize = values[0]; 
+                  
+                  setCaptionData((prev) => {
+                    // If there's no data yet, just return null
+                    if (!prev) return null; 
+                    
+                    return {
+                      ...prev,
+                      globalStyles: {
+                        ...prev.globalStyles,
+                        fontSize: newFontSize, // Update just the fontSize
+                      },
+                    };
+                  });
+                }}
+              />
+              </CardContent>
+            </Card>
+
+            {/* Caption Font Color */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Caption Font Color</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={captionData?.globalStyles.primaryColor ?? "#ffffff"}
+                    onChange={(e) => {
+                      setCaptionData((prev) => {
+                        if (!prev) return null;
+                        return {
+                          ...prev,
+                          globalStyles: {
+                            ...prev.globalStyles,
+                            primaryColor: e.target.value,
+                          },
+                        };
+                      });
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+      </div>
   );
 }
