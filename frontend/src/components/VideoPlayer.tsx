@@ -1,6 +1,8 @@
 import {useEffect, useState, useRef} from "react";
 import { Slider } from "@/components/ui/slider"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import { useNavigate } from 'react-router';
 
 // Types matching your FastAPI JSON structure
 interface CaptionSegment {
@@ -26,6 +28,8 @@ interface CaptionPayload {
 }
 
 export default function VideoPlayer() {
+    const navigate = useNavigate();
+
     // Get the video from server
     const videoUrl = "http://127.0.0.1:8000/api/video";
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -64,6 +68,17 @@ export default function VideoPlayer() {
 
     if (!captionData) {
         return <div className="text-sm text-gray-500 animate-pulse">Loading setup assets...</div>;
+    }
+
+    const handleRender = () => {
+      if(!captionData) {
+        alert("No Caption Data Found");
+        return;
+      }
+
+      // Navigate to render page with captionData as state
+      navigate("/render", { state: { captionData } });
+
     }
 
     const { globalStyles } = captionData;
@@ -213,6 +228,12 @@ export default function VideoPlayer() {
                 </div>
               </CardContent>
             </Card>
+            <Button className="hover:bg-white hover:text-black border-2 border-black"
+              onClick={handleRender}
+            >
+              Render Video
+            </Button>
+          
           </div>
       </div>
   );

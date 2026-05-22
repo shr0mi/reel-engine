@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import TranscribeVideoPage from "@/pages/TranscribeVideosPage"
 import CreateCaptionsPage from "@/pages/CreateCaptionsPage"
 import OverviewPage from "@/pages/OverviewPage"
+import RenderPage from "@/pages/RenderPage"
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<OverviewPage />} />
             <Route path="/transcribe" element={<TranscribeVideoPage />} />
             <Route path="/caption" element={<CreateCaptionsPage />} />
+            <Route path="/render" element={<RenderPage />} />
           
 
         </Routes>
