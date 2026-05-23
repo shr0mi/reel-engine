@@ -92,7 +92,7 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
             pointerEvents: 'none',
             userSelect: 'none',
             fontFamily,
-            fontSize: `${fontSize}px`,
+            fontSize: `${Math.round(fontSize * 1.35)}px`,
             fontWeight: 900,
             color: primaryColor,
             textTransform: 'uppercase',
