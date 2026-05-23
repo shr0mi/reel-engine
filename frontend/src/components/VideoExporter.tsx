@@ -25,9 +25,10 @@ interface CaptionPayload {
 }
 
 export default function VideoExportPage({ captionData }: { captionData: CaptionPayload }) {
-  useEffect(() => {
-      console.log(captionData);
-    }, [captionData]);
+  //  useEffect(() => {
+  //      console.log(captionData);
+  //      console.log(captionData.globalStyles)
+  //    }, [captionData]);
   const [status, setStatus] = useState<'idle' | 'rendering' | 'error' | 'success'>('idle');
   const [progress, setProgress] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -38,20 +39,30 @@ export default function VideoExportPage({ captionData }: { captionData: CaptionP
     setProgress(0);
 
     try {
-      // 1. Trigger the client-side render
       const { getBlob } = await renderMediaOnWeb({
         composition: {
           id: 'browser-render-demo',
           component: MyVideoComponent,
-          durationInFrames: 90, // 3 seconds @ 30fps
+          durationInFrames: 300,
           fps: 30,
           width: 1920,
           height: 1080,
+          // ✅ Pass caption data as input props to the composition
+          
+          defaultProps: {
+            globalStyles: captionData.globalStyles,
+            segments: captionData.segments,
+            // Note: videoUrl is intentionally NOT forwarded —
+            // MyVideoComponent always uses the hardcoded localhost URL
+          },
+        },
+        inputProps: {
+          globalStyles: captionData.globalStyles,
+          segments: captionData.segments,
         },
         container: 'mp4',
         videoCodec: 'h264',
         onProgress: ({ progress: currentProgress }) => {
-          // Update progress state (values from 0 to 1)
           setProgress(Math.round(currentProgress * 100));
         },
       });

@@ -29,7 +29,8 @@ export default function RenderPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const captionData = location.state as CaptionPayload | null;
+  const raw = location.state as { captionData: CaptionPayload } | null;
+  const captionData = raw?.captionData ?? null;
 
   if (!captionData) {
     return (
