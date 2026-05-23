@@ -50,8 +50,8 @@ export default function VideoExportPage({ captionData }: { captionData: CaptionP
           component: MyVideoComponent,
           durationInFrames: durationInFrames,
           fps: fps,
-          width: 1920,
-          height: 1080,
+          width: 1080,
+          height: 1920,
           // Pass caption data as input props to the composition
           
           defaultProps: {

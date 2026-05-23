@@ -6,8 +6,10 @@ from fastapi.responses import StreamingResponse, FileResponse
 from faster_whisper import WhisperModel
 from fastapi.middleware.cors import CORSMiddleware
 import io
+from pydantic import BaseModel
 import srt
 from pathlib import Path
+from typing import List
 
 # Initialize the FastAPI app
 app = FastAPI()
@@ -197,3 +199,21 @@ def get_parsed_captions():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse SRT file: {str(e)}")
+    
+# BaseModel for segments
+class Segment(BaseModel):
+    id: int
+    start: float
+    end: float
+    text: str
+
+# Create the POST endpoint that expects a list of these segments
+@app.post("/segments")
+async def receive_segments(segments: List[Segment]):
+    # Your segments data is now fully validated and accessible as a Python list
+    for segment in segments:
+        # Example: accessing data using dot notation
+        print(f"Processing segment {segment.id}: {segment.text}")
+    
+    # 3. Return a success JSON response
+    return {"status": "success", "message": f"Successfully processed {len(segments)} segments."}
