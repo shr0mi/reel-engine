@@ -38,16 +38,21 @@ export default function VideoExportPage({ captionData }: { captionData: CaptionP
     setStatus('rendering');
     setProgress(0);
 
+    const fps = 30;
+    // Find the last of the video segments
+    const maxSeconds = captionData.segments[captionData.segments.length - 1].end;
+    const durationInFrames = Math.ceil(maxSeconds * fps);
+
     try {
       const { getBlob } = await renderMediaOnWeb({
         composition: {
           id: 'browser-render-demo',
           component: MyVideoComponent,
-          durationInFrames: 300,
-          fps: 30,
+          durationInFrames: durationInFrames,
+          fps: fps,
           width: 1920,
           height: 1080,
-          // ✅ Pass caption data as input props to the composition
+          // Pass caption data as input props to the composition
           
           defaultProps: {
             globalStyles: captionData.globalStyles,
