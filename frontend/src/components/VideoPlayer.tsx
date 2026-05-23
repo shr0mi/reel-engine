@@ -84,7 +84,7 @@ export default function VideoPlayer() {
     const { globalStyles } = captionData;
 
     return (
-      <div className="flex gap-[20px]" items-start>
+      <div className="flex gap-[20px]">
       <div className="max-w-[400px]">
         {/* 
           The parent container MUST be relative. 
