@@ -1,17 +1,32 @@
 import os
-import shutil
-from datetime import timedelta
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse, FileResponse
-from faster_whisper import WhisperModel
-from fastapi.middleware.cors import CORSMiddleware
 import io
-from pydantic import BaseModel
-import srt
+import shutil
 from pathlib import Path
 from typing import List
+from datetime import timedelta
 
-# Initialize the FastAPI app
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import srt
+from faster_whisper import WhisperModel
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 1. Initialize Supabase Client
+# In production, use os.environ.get("SUPABASE_URL") after loading a dotenv file.
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+print(f"Supabase URL: {SUPABASE_URL}")
+print(f"Supabase Key: {SUPABASE_KEY}")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+BUCKET_NAME = "videos"
+
 app = FastAPI()
 
 app.add_middleware(
@@ -21,35 +36,21 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:8000",
     ],
-    allow_credentials=True,       # Important if you use cookies or auth later
-    allow_methods=["*"],          # Allow GET, POST, PUT, DELETE, etc.
-    allow_headers=["*"],          # Allow all headers (like Content-Type)
-    expose_headers=["Content-Range", "Accept-Ranges"], # Helps video streaming players
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Range", "Accept-Ranges"],
 )
 
-# A simple GET endpoint for testing
-@app.get("/")
-def read_root():
-    return {
-        "message": "Hello World!",
-        "status": "FastAPI is running perfectly!"
-    }
+# Keep local TEMP dirs just for whisper's processing workspace
+TEMP_DIR = "temp_processing"
+os.makedirs(TEMP_DIR, exist_ok=True)
 
-# Create a permanent storage directory for your videos
-UPLOAD_DIR = "stored_videos"
-UPLOAD_SRT = "stored_srt"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(UPLOAD_SRT, exist_ok=True)
-
-# Initialize Faster-Whisper. 
-# Using "small" for speed/efficiency on 16GB RAM. 
-# Running on CPU for Apple Silicon (int8 quantization keeps memory footprint tiny)
 MODEL_SIZE = "small"
 print(f"Loading Whisper model ({MODEL_SIZE})...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 print("Model loaded successfully!")
 
-# Function to format time for SRT (HH:MM:SS,mmm)
 def format_srt_time(seconds):
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
@@ -59,25 +60,34 @@ def format_srt_time(seconds):
 
 @app.post("/transcribe/")
 async def transcribe_video(file: UploadFile = File(...)):
-    # 1. Validate that it's a video file (basic check)
     if not file.content_type.startswith("video/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be a video.")
 
-    # 2. Save the video file permanently
-    ext = os.path.splitext(file.filename)[1] # get the file extension (e.g., .mp4, .mkv)
-    #print(ext)
-    video_path = os.path.join(UPLOAD_DIR, f"video{ext}")
+    # We still need a temporary file locally because Faster-Whisper needs a file path to parse via ffmpeg
+    temp_video_path = os.path.join(TEMP_DIR, f"temp_video.mp4")
+    
     try:
-        with open(video_path, "wb") as buffer:
+        with open(temp_video_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save video: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to write local temporary file: {str(e)}")
 
     try:
-        # 3. Run Faster-Whisper transcription directly on the saved video path
-        # (Whisper internally extracts the audio track using ffmpeg bindings)
+        # --- SUPABASE STORAGE UPLOAD ---
+        # Read the local temp file bytes to send to Supabase
+        with open(temp_video_path, "rb") as f:
+            file_bytes = f.read()
+        
+        # Uploading to bucket with 'upsert=true' to replace any existing file instantly
+        supabase.storage.from_(BUCKET_NAME).upload(
+            path="video.mp4",
+            file=file_bytes,
+            file_options={"content-type": "video/mp4", "upsert": "true"}
+        )
+
+        # 3. Run Faster-Whisper transcription on our local temp file
         segments, info = model.transcribe(
-            video_path,
+            temp_video_path,
             word_timestamps=True,
             condition_on_previous_text=False
         )
@@ -92,41 +102,31 @@ async def transcribe_video(file: UploadFile = File(...)):
             if not words:
                 continue
 
-            # Chunk them into max_words_per_caption
             for i in range(0, len(words), max_words_per_caption):
                 chunk_words = words[i:i + max_words_per_caption]
-
                 start_time = format_srt_time(chunk_words[0].start)
                 end_time = format_srt_time(chunk_words[-1].end)
-
-                # Clean up double spacing by stripping individual tokens before joining
                 text = " ".join(word.word.strip() for word in chunk_words).strip()
-
                 srt_content.append(f"{srt_index}\n{start_time} --> {end_time}\n{text}\n\n")
                 srt_index += 1
 
-        # for i, segment in enumerate(segments, start=1):
-        #     start_time = format_srt_time(segment.start)
-        #     end_time = format_srt_time(segment.end)
-        #     text = segment.text.strip()
-            
-        #     srt_content.append(f"{i}\n{start_time} --> {end_time}\n{text}\n\n")
-
         full_srt_string = "".join(srt_content)
 
-        # 5. Return the SRT file as an inline downloadable file attachment
-        # This converts our raw string into a byte stream for FastAPI to send over HTTP
-        file_stream = io.BytesIO(full_srt_string.encode("utf-8"))
-        srt_filename = f"{os.path.splitext(file.filename)[0]}.srt"
+        # Upload the SRT string to Supabase Storage as bytes (with upsert enabled)
+        srt_bytes = full_srt_string.encode("utf-8")
+        supabase.storage.from_(BUCKET_NAME).upload(
+            path="video.srt",
+            file=srt_bytes,
+            file_options={"content-type": "text/plain", "upsert": "true"}
+        )
 
-        # Store SRT permanently
-        srt_path = os.path.join(UPLOAD_SRT, "video.srt")
-        try:
-            # Open in text mode ("w") with utf-8 encoding to save the string directly
-            with open(srt_path, "w", encoding="utf-8") as buffer:
-                buffer.write(full_srt_string)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to save SRT: {str(e)}")
+        # Cleanup local temporary video file to keep the disk clear
+        if os.path.exists(temp_video_path):
+            os.remove(temp_video_path)
+
+        # 5. Return the SRT file stream response back to frontend client
+        file_stream = io.BytesIO(srt_bytes)
+        srt_filename = f"{os.path.splitext(file.filename)[0]}.srt"
 
         return StreamingResponse(
             file_stream,
@@ -135,43 +135,37 @@ async def transcribe_video(file: UploadFile = File(...)):
         )
 
     except Exception as e:
-        # If transcription fails, we still kept the video, but we should inform the user
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
-    
+        if os.path.exists(temp_video_path):
+            os.remove(temp_video_path)
+        raise HTTPException(status_code=500, detail=f"Transcription or cloud upload failed: {str(e)}")
 
-# Send video file to frontend
+
 @app.get("/api/video")
 async def get_video():
-    video_path = os.path.join(UPLOAD_DIR, "video.mp4")  # get video from stored_videos
-    # Verify the file actually exists to avoid a 500 error
-    if not os.path.exists(video_path):
-        return {"error": "Video file not found"}, 404
-    
-    # FileResponse automatically handles HTTP Range requests required for video player scrubbing
-    return FileResponse(video_path, media_type="video/mp4")
+    try:
+        # Since your bucket is public, we can grab the direct public URL from Supabase
+        # This completely unburdens FastAPI from serving heavy video streams!
+        public_url_res = supabase.storage.from_(BUCKET_NAME).get_public_url("video.mp4")
+        
+        # Redirect the frontend video player element directly to the Supabase CDN URL
+        return RedirectResponse(url=public_url_res)
+    except Exception as e:
+        return {"error": f"Could not retrieve video from cloud storage: {str(e)}"}, 404
 
 
-# We will first format the SRT into our preferred JSON structure on the backend, then send that to the frontend for easier handling
-srt_file_path = Path(os.path.join(UPLOAD_SRT, "video.srt"))
 @app.get("/api/captions")
 def get_parsed_captions():
-    if not os.path.exists(srt_file_path):
-        return {"error": "SRT file not found"}, 404
-    
     try:
-        # 2. Read the raw SRT file content
-        srt_content = srt_file_path.read_text(encoding="utf-8")
+        # Download the SRT directly from your Supabase bucket into memory
+        srt_bytes = supabase.storage.from_(BUCKET_NAME).download("video.srt")
+        srt_content = srt_bytes.decode("utf-8")
         
-        # 3. Parse it into a generator using the srt library
         parsed_subtitle_generator = srt.parse(srt_content)
         
         segments = []
         for sub in parsed_subtitle_generator:
-            # Convert timedelta objects directly into total seconds as a float
             start_seconds = sub.start.total_seconds()
             end_seconds = sub.end.total_seconds()
-            
-            # Clean up the text (remove unnecessary newlines introduced by raw SRT)
             clean_text = sub.content.replace("\n", " ").strip()
             
             segments.append({
@@ -181,39 +175,31 @@ def get_parsed_captions():
                 "text": clean_text
             })
             
-        # 4. Construct the complete response format with default global design values
         payload = {
-            "videoUrl": "http://localhost:8000/static/video.mp4", # Fallback or static reference
+            "videoUrl": supabase.storage.from_(BUCKET_NAME).get_public_url("video.mp4"),
             "globalStyles": {
                 "fontFamily": "Impact",
                 "fontSize": 40,
                 "primaryColor": "#FFFF00",
                 "strokeColor": "#000000",
                 "strokeWidth": 4,
-                "positionY": 75  # 75% down the screen by default
+                "positionY": 75
             },
             "segments": segments
         }
-        
         return payload
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to parse SRT file: {str(e)}")
-    
-# BaseModel for segments
+        return {"error": f"SRT file not found or corrupted: {str(e)}"}, 404
+
 class Segment(BaseModel):
     id: int
     start: float
     end: float
     text: str
 
-# Create the POST endpoint that expects a list of these segments
 @app.post("/segments")
 async def receive_segments(segments: List[Segment]):
-    # Your segments data is now fully validated and accessible as a Python list
     for segment in segments:
-        # Example: accessing data using dot notation
         print(f"Processing segment {segment.id}: {segment.text}")
-    
-    # 3. Return a success JSON response
     return {"status": "success", "message": f"Successfully processed {len(segments)} segments."}
