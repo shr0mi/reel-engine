@@ -1,40 +1,66 @@
 import os
+from typing import List
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
+from dotenv import load_dotenv
 
-# 1. Keep your exact schema model
-class CharacterSheet(BaseModel):
-    name: str = Field(description="The hero's name")
-    role: str = Field(description="Their character class, e.g., Mage, Warrior, Rogue")
-    level: int = Field(description="Starting level, usually 1")
-    abilities: list[str] = Field(description="A list of 3 starting abilities or skills")
-    backstory: str = Field(description="A brief, 2-sentence background story")
+# 1. Load environment variables from .env file immediately
+load_dotenv()
 
-# 2. Assign the schema globally via output_type in the Agent definition
-agent = Agent(
-    'google:gemini-2.5-flash',
-    output_type=CharacterSheet,  # <- Changed from result_type to output_type
-    instructions="You are an expert RPG game master. Create unique, thematic character profiles."
+# Optional but recommended: Verify the key is loaded before initializing the model
+if not os.environ.get("GEMINI_API_KEY"):
+    raise ValueError("GEMINI_API_KEY is missing! Check your .env file.")
+
+# Input schema matching your FastAPI server
+class Segment(BaseModel):
+    id: int
+    start: float
+    end: float
+    text: str
+
+# Schema for an individual emoji pop-up
+class EmojiSegment(BaseModel):
+    id: int = Field(description="The exact ID of the segment this emoji belongs to")
+    start: float = Field(description="The start time of the segment")
+    end: float = Field(description="The end time of the segment")
+    emoji: str = Field(description="A highly relevant emoji for this segment")
+
+# The final structured output model the AI will return
+class EmojiResponse(BaseModel):
+    emojis: list[EmojiSegment] = Field(description="List of selected segments that get emojis")
+
+
+# System prompt instructs the agent to be selective (TikTok/Shorts style)
+instructions = (
+    "You are an expert short-form video editor (TikTok, YouTube Shorts, Reels). "
+    "Your job is to analyze a video transcript and select choice moments to add pop-up emojis. "
+    "\n\nCRITICAL RULES:\n"
+    "1. DO NOT OVERDO IT. Too many emojis look spammy. Only select around 25% to 40% of the segments to receive emojis.\n"
+    "2. Choose segments with high emotional impact, action verbs, or distinct visual nouns.\n"
+    "3. Match the emojis perfectly to the context of the text."
 )
 
-def main():
+# Define your Agent
+agent = Agent(
+    'google:gemini-2.5-flash',
+    output_type=EmojiResponse,
+    instructions=instructions
+)
+
+async def add_emojis_to_segments(segments: List[Segment]) -> EmojiResponse:
+    """
+    Takes a list of transcript segments, passes them to Pydantic AI,
+    and returns a filtered list of segments paired with contextual emojis.
+    """
     if not os.environ.get("GEMINI_API_KEY"):
-        print("❌ Error: GEMINI_API_KEY environment variable is not set.")
-        return
+        raise ValueError("GEMINI_API_KEY environment variable is not set.")
 
-    print("Asking Gemini to generate a structured character...")
-    
-    # 3. Simple run call without competing dynamic parameters
-    result = agent.run_sync("Give me a gritty, dark-fantasy monster hunter character.")
-    
-    # 4. Extract your fully typed data object
-    character: CharacterSheet = result.output
-    
-    print("\n--- Generated Character Profile ---")
-    print(f"Name: {character.name}")
-    print(f"Class: {character.role} (Level {character.level})")
-    print(f"Abilities: {', '.join(character.abilities)}")
-    print(f"Backstory: {character.backstory}")
+    # Format the input segments into a clean text prompt for the LLM
+    prompt = "Here are the video transcript segments. Select the best ones to add emojis to:\n\n"
+    for seg in segments:
+        prompt += f"ID: {seg.id} | [{seg.start}s -> {seg.end}s]: {seg.text}\n"
 
-if __name__ == "__main__":
-    main()
+    # Use async agent.run since your FastAPI endpoint is async
+    result = await agent.run(prompt)
+    
+    return result.output

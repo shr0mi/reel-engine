@@ -13,6 +13,7 @@ import srt
 from faster_whisper import WhisperModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from coolCaptionsAgent import Segment, add_emojis_to_segments
 
 load_dotenv()
 
@@ -21,8 +22,6 @@ load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-print(f"Supabase URL: {SUPABASE_URL}")
-print(f"Supabase Key: {SUPABASE_KEY}")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 BUCKET_NAME = "videos"
@@ -192,14 +191,14 @@ def get_parsed_captions():
     except Exception as e:
         return {"error": f"SRT file not found or corrupted: {str(e)}"}, 404
 
-class Segment(BaseModel):
-    id: int
-    start: float
-    end: float
-    text: str
 
-@app.post("/segments")
+@app.post("/cool-captions-agent")
 async def receive_segments(segments: List[Segment]):
-    for segment in segments:
-        print(f"Processing segment {segment.id}: {segment.text}")
-    return {"status": "success", "message": f"Successfully processed {len(segments)} segments."}
+    
+    # Process segments through your agent
+    emoji_data = await add_emojis_to_segments(segments)
+    
+    return {
+        "status": "success", 
+        "data": emoji_data
+    }

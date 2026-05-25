@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/slider"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import { useNavigate } from 'react-router';
+import {Loader2} from "lucide-react";
 
 // Types matching your FastAPI JSON structure
 interface CaptionSegment {
@@ -27,6 +28,18 @@ interface CaptionPayload {
   segments: CaptionSegment[];
 }
 
+interface EmojiSegment {
+  id: number;
+  start: number;
+  end: number;
+  emoji: string;
+}
+
+interface EmojiPayload {
+  status: string;
+  data: EmojiSegment[];
+}
+
 export default function VideoPlayer() {
     const navigate = useNavigate();
 
@@ -36,20 +49,70 @@ export default function VideoPlayer() {
 
     // 1. Core states for storing server payload and tracking active caption text
     const [captionData, setCaptionData] = useState<CaptionPayload | null>(null);
+    const [emojiData, setEmojiData] = useState<EmojiPayload | null>(null);
     const [currentText, setCurrentText] = useState<string>("");
+    const [currentEmoji, setCurrentEmoji] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [loadingText, setLoadingText] = useState<string>("Loading caption configuration...");
 
-    // 2. Fetch the caption configuration configuration from FastAPI on mount
-    useEffect(() => {
-        fetch("http://127.0.0.1:8000/api/captions")
-        .then((res) => {
-            if (!res.ok) throw new Error("Failed to pull caption tracks");
-            return res.json();
-        })
-        .then((data: CaptionPayload) => {
-            setCaptionData(data);
-        })
-        .catch((err) => console.error("Error fetching captions:", err));
-    }, []);
+// 2. Fetch the caption configuration and emojis sequentially on mount
+useEffect(() => {
+    setIsLoading(true);
+    setLoadingText("Loading caption configuration...");
+    
+    fetch("http://127.0.0.1:8000/api/captions")
+    .then((res) => {
+        if (!res.ok) throw new Error("Failed to pull caption tracks");
+        return res.json();
+    })
+    .then((data: CaptionPayload) => {
+        // 1. Save the caption data to state for your UI
+        setCaptionData(data);
+
+        // 2. Guard: Make sure the response actually has segments
+        if (!data.segments || data.segments.length === 0) {
+            console.log("No caption segments found, skipping AI emoji fetch.");
+            setIsLoading(false); 
+            return;
+        }
+
+        // 3. Immediately kick off the second fetch using 'data.segments' directly!
+        setLoadingText("Applying AI emoji magic to your captions...");
+        console.log("Sending segments to Pydantic AI agent for emoji magic...");
+
+        // Return this fetch promise so we can chain the next .then()
+        return fetch("http://127.0.0.1:8000/cool-captions-agent", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data.segments), 
+        });
+    })
+    .then((res) => {
+        // If the previous block bailed out early, res will be undefined
+        if (!res) return; 
+        
+        if (!res.ok) throw new Error("Failed to fetch AI emoji recommendations");
+        return res.json();
+    })
+    .then((payload: { status: string; data: { emojis: EmojiSegment[] } }) => {
+        if (!payload) return;
+
+        // 4. Save emoji data and turn off the loader
+        setEmojiData({
+            status: payload.status,
+            data: payload.data.emojis
+        });
+        console.log("Successfully applied AI emojis:", payload.data.emojis);
+        setIsLoading(false); 
+    })
+    .catch((err) => {
+        console.error("Error in fetching pipeline:", err);
+        setIsLoading(false);
+    });
+}, []); // Empty dependency array keeps it running strictly once on mount.
+    
 
     // 3. Time tracking sync handle triggered on every video tick
     const handleTimeUpdate = () => {
@@ -62,8 +125,14 @@ export default function VideoPlayer() {
         (seg) => currentTime >= seg.start && currentTime <= seg.end
         );
 
+        // Find Emoji Segment
+        const activeEmojiSegment = emojiData?.data.find(
+            (seg) => currentTime >= seg.start && currentTime <= seg.end
+        );
+
         // Update text string if a match is found, otherwise clear the layer
         setCurrentText(activeSegment ? activeSegment.text : "");
+        setCurrentEmoji(activeEmojiSegment ? activeEmojiSegment.emoji : "");
     };
 
     if (!captionData) {
@@ -82,6 +151,15 @@ export default function VideoPlayer() {
     }
 
     const { globalStyles } = captionData;
+
+    if(isLoading){
+      return(
+        <div className="flex flex-col items-center justify-center min-h-[200px] w-full gap-2 text-sm text-gray-500">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span className="animate-pulse">{loadingText}</span>
+        </div>
+      )
+    }
 
     return (
       <div className="flex gap-[20px]">
@@ -112,25 +190,47 @@ export default function VideoPlayer() {
           */}
           {currentText && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75"
+            className="absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75"
+            style={{
+              top: `${globalStyles.positionY}%`,
+              fontFamily: globalStyles.fontFamily,
+              fontSize: `${globalStyles.fontSize}px`,
+              color: globalStyles.primaryColor,
+              fontWeight: "900", // "black" isn't standard CSS; use "900" or "bold"
+              textTransform: "uppercase",
+              letterSpacing: "1.5px", // Adds that cinematic title spacing
+              textShadow: `
+                /* 1. Sharp core glow to keep letters crisp */
+                0 0 4px ${globalStyles.primaryColor},
+                
+                /* 3. Wide, soft background glow (simulating light bleed) */
+                0 0 24px ${globalStyles.primaryColor},
+
+                /* NEW: Tight black shadow sticking directly to the letters */
+                0px 0px ${globalStyles.fontSize/5}px rgba(0, 0, 0, 0.95),
+                
+                /* 4. Deep, soft drop shadow to push the text off the background */
+                2px 4px 8px rgba(0, 0, 0, 0.9),
+                4px 8px 16px rgba(0, 0, 0, 0.6)
+              `,
+            }}
+          >
+            {currentText}
+          </div>
+          )}
+          {currentEmoji && (
+            <div
+              className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none select-none transition-all duration-75 rounded-lg px-3 py-1"
               style={{
-                top: `${globalStyles.positionY}%`,
+                top: `${globalStyles.positionY - 20}%`,
                 fontFamily: globalStyles.fontFamily,
-                fontSize: `${globalStyles.fontSize}px`,
-                color: globalStyles.primaryColor,
+                fontSize: `${globalStyles.fontSize + 10}px`,
+                backgroundColor: "white",
                 fontWeight: "black",
                 textTransform: "uppercase",
-                // Simulating standard TikTok text stroke using CSS text-shadow
-                //WebkitTextStroke: '3px black',
-                textShadow: `
-                  -${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},  
-                  ${globalStyles.strokeWidth}px -${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
-                  -${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor},
-                  ${globalStyles.strokeWidth}px  ${globalStyles.strokeWidth}px 0 ${globalStyles.strokeColor}
-                `,
               }}
             >
-              {currentText}
+              {currentEmoji}
             </div>
           )}
         </div>
