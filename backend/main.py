@@ -200,5 +200,10 @@ async def receive_segments(segments: List[Segment]):
     
     return {
         "status": "success", 
-        "data": emoji_data
+        "data": emoji_data,
+        "globalStyles": {
+            "fontSize": 40,
+            "positionY": 55,
+            "backgroundColor": "rgba(255, 255, 255, 0.8)",
+        }
     }

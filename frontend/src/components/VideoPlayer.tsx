@@ -4,6 +4,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import { useNavigate } from 'react-router';
 import {Loader2} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // Types matching your FastAPI JSON structure
 interface CaptionSegment {
@@ -35,10 +42,27 @@ interface EmojiSegment {
   emoji: string;
 }
 
+interface EmojiGlobalStyles {
+  fontSize: number;
+  positionY: number;
+  backgroundColor: string;
+}
+
 interface EmojiPayload {
   status: string;
   data: EmojiSegment[];
+  globalStyles: EmojiGlobalStyles;
 }
+
+// Define some common, clean fonts
+const AVAILABLE_FONTS = [
+  { name: "Impact", value: "font-impact" }, // You'll define these utility classes below
+  { name: "Arial", value: "font-sans" },
+  { name: "Helvetica", value: "font-helvetica" },
+  { name: "Comic Sans", value: "font-comic" },
+  { name: "Times New Roman", value: "font-serif" },
+  { name: "Courier New", value: "font-mono" },
+];
 
 export default function VideoPlayer() {
     const navigate = useNavigate();
@@ -96,13 +120,14 @@ useEffect(() => {
         if (!res.ok) throw new Error("Failed to fetch AI emoji recommendations");
         return res.json();
     })
-    .then((payload: { status: string; data: { emojis: EmojiSegment[] } }) => {
+    .then((payload: { status: string; data: { emojis: EmojiSegment[] }; globalStyles: EmojiGlobalStyles }) => {
         if (!payload) return;
 
         // 4. Save emoji data and turn off the loader
         setEmojiData({
             status: payload.status,
-            data: payload.data.emojis
+            data: payload.data.emojis,
+            globalStyles: payload.globalStyles
         });
         console.log("Successfully applied AI emojis:", payload.data.emojis);
         setIsLoading(false); 
@@ -190,13 +215,14 @@ useEffect(() => {
           */}
           {currentText && (
             <div
-            className="absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75"
+            className={`absolute left-1/2 -translate-x-1/2 w-[90%] text-center pointer-events-none select-none transition-all duration-75
+              ${captionData.globalStyles.fontFamily ?? "font-impact"}
+              `}
             style={{
               top: `${globalStyles.positionY}%`,
-              fontFamily: globalStyles.fontFamily,
               fontSize: `${globalStyles.fontSize}px`,
               color: globalStyles.primaryColor,
-              fontWeight: "900", // "black" isn't standard CSS; use "900" or "bold"
+              fontWeight: "300", // "black" isn't standard CSS; use "900" or "bold"
               textTransform: "uppercase",
               letterSpacing: "1.5px", // Adds that cinematic title spacing
               textShadow: `
@@ -222,12 +248,10 @@ useEffect(() => {
             <div
               className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none select-none transition-all duration-75 rounded-lg px-3 py-1"
               style={{
-                top: `${globalStyles.positionY - 20}%`,
+                top: `${emojiData?.globalStyles.positionY}%`,
                 fontFamily: globalStyles.fontFamily,
-                fontSize: `${globalStyles.fontSize + 10}px`,
-                backgroundColor: "white",
-                fontWeight: "black",
-                textTransform: "uppercase",
+                fontSize: `${emojiData?.globalStyles.fontSize}px`,
+                backgroundColor: emojiData?.globalStyles.backgroundColor,
               }}
             >
               {currentEmoji}
@@ -302,6 +326,44 @@ useEffect(() => {
               </CardContent>
             </Card>
 
+            {/* Caption Font Family */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Caption Font Family</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  // Fallback to 'font-impact' if no font is set yet
+                  value={captionData?.globalStyles.fontFamily ?? "font-impact"}
+                  onValueChange={(newFont) => {
+                    setCaptionData((prev) => {
+                      if (!prev) return null;
+                      return {
+                        ...prev,
+                        globalStyles: {
+                          ...prev.globalStyles,
+                          fontFamily: newFont, // Update the font family
+                        },
+                      };
+                    }
+                  ); console.log(captionData?.globalStyles.fontFamily);
+                  }}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select a font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_FONTS.map((font) => (
+                      <SelectItem key={font.value} value={font.value}>
+                        {/* Visual preview of the font in the dropdown */}
+                        <span className={font.value}>{font.name}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
             {/* Caption Font Color */}
             <Card>
               <CardHeader>
@@ -328,6 +390,74 @@ useEffect(() => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Emoji Position Control */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Emoji Position</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Slider
+                // Use value instead of defaultValue so it stays in sync with your state
+                value={[emojiData?.globalStyles.positionY ?? 55]} 
+                max={100}
+                step={1}
+                className="w-[200px]"
+                onValueChange={(values) => {
+                  // Grab the first value from the array
+                  const newY = values[0]; 
+                  
+                  setEmojiData((prev) => {
+                    // If there's no data yet, just return null
+                    if (!prev) return null; 
+                    
+                    return {
+                      ...prev,
+                      globalStyles: {
+                        ...prev.globalStyles,
+                        positionY: newY, // Update just the positionY
+                      },
+                    };
+                  });
+                }}
+              />
+              </CardContent>
+            </Card>
+
+            {/* Emoji Font Size */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Emoji Font Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Slider
+                // Use value instead of defaultValue so it stays in sync with your state
+                value={[emojiData?.globalStyles.fontSize ?? 40]} 
+                max={80}
+                step={1}
+                className="w-[200px]"
+                onValueChange={(values) => {
+                  // Grab the first value from the array
+                  const newFontSize = values[0]; 
+                  
+                  setEmojiData((prev) => {
+                    // If there's no data yet, just return null
+                    if (!prev) return null; 
+                    
+                    return {
+                      ...prev,
+                      globalStyles: {
+                        ...prev.globalStyles,
+                        fontSize: newFontSize, // Update just the fontSize
+                      },
+                    };
+                  });
+                }}
+              />
+              </CardContent>
+            </Card>
+
+            {/* Go to Next page button */}
             <Button className="hover:bg-white hover:text-black border-2 border-black"
               onClick={handleRender}
             >

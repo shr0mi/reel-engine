@@ -5,6 +5,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  /* This automatically generates utility classes like font-impact and font-comic */
+  --font-impact: "Impact", "Haettenschweiler", "Arial Black", sans-serif;
+  --font-comic: "Comic Sans MS", "Comic Sans", cursive;
+  --font-helvetica: "Helvetica Neue", "Helvetica", Arial, sans-serif;
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
