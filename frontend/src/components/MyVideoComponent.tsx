@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring } from 'remotion';
 import { Video } from '@remotion/media';
+import '../App.css';
 
 interface CaptionSegment {
   id: number;
@@ -18,12 +19,32 @@ interface GlobalStyles {
   positionY: number;
 }
 
+interface EmojiSegment {
+  id: number;
+  start: number;
+  end: number;
+  emoji: string;
+}
+
+interface EmojiGlobalStyles {
+  fontSize: number;
+  positionY: number;
+  backgroundColor: string;
+}
+
+interface EmojiPayload {
+  status: string;
+  data: EmojiSegment[];
+  globalStyles: EmojiGlobalStyles;
+}
+
 export interface MyVideoProps {
   globalStyles: GlobalStyles;
   segments: CaptionSegment[];
+  emojiData: EmojiPayload;
 }
 
-export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segments }) => {
+export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segments, emojiData }) => {
   const videoUrl = "http://localhost:8000/api/video";
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -34,13 +55,31 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
     (seg) => currentTime >= seg.start && currentTime < seg.end
   );
 
+  const activeEmojiSegment = emojiData?.data?.find(
+    (seg) => currentTime >= seg.start && currentTime < seg.end
+  );
+
   const segmentStartFrame = activeSegment
     ? Math.round(activeSegment.start * fps)
+    : 0;
+
+  const emojiSegmentStartFrame = activeEmojiSegment
+    ? Math.round(activeEmojiSegment.start * fps)
     : 0;
 
   const scale = activeSegment
     ? spring({
         frame: frame - segmentStartFrame,
+        fps,
+        config: { damping: 12, stiffness: 200, mass: 0.5 },
+        from: 0.75,
+        to: 1,
+      })
+    : 1;
+
+  const emojiScale = activeEmojiSegment
+    ? spring({
+        frame: frame - emojiSegmentStartFrame,
         fps,
         config: { damping: 12, stiffness: 200, mass: 0.5 },
         from: 0.75,
@@ -57,13 +96,25 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
     positionY = 75,
   } = globalStyles ?? {};
 
+  useEffect(() => {
+    console.log(fontFamily);
+  }, []);
+
   // Mirror your working HTML5 preview: 4-shadow stroke technique
   const textShadow = `
-    -${strokeWidth}px -${strokeWidth}px 0 ${strokeColor},
-     ${strokeWidth}px -${strokeWidth}px 0 ${strokeColor},
-    -${strokeWidth}px  ${strokeWidth}px 0 ${strokeColor},
-     ${strokeWidth}px  ${strokeWidth}px 0 ${strokeColor}
-  `;
+                /* 1. Sharp core glow to keep letters crisp */
+                0 0 4px ${globalStyles.primaryColor},
+                
+                /* 3. Wide, soft background glow (simulating light bleed) */
+                0 0 24px ${globalStyles.primaryColor},
+
+                /* NEW: Tight black shadow sticking directly to the letters */
+                0px 0px ${globalStyles.fontSize/5}px rgba(0, 0, 0, 0.95),
+                
+                /* 4. Deep, soft drop shadow to push the text off the background */
+                2px 4px 8px rgba(0, 0, 0, 0.9),
+                4px 8px 16px rgba(0, 0, 0, 0.6)
+              `;
 
   useEffect(() => {
     console.log('Caption data received in MyVideoComponent:', { globalStyles, segments });
@@ -79,7 +130,7 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
 
       {/* Layer 2: Caption — absolutely positioned, mirrors the HTML5 preview layout */}
       {activeSegment && (
-        <div
+        <div className={`${globalStyles.fontFamily ?? "font-impact"}`}
           style={{
             zIndex: 10,
             position: 'absolute',
@@ -91,7 +142,6 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
             textAlign: 'center',
             pointerEvents: 'none',
             userSelect: 'none',
-            fontFamily,
             fontSize: `${Math.round(fontSize * 2.7)}px`,
             fontWeight: 900,
             color: primaryColor,
@@ -102,6 +152,20 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
         >
           {activeSegment.text}
         </div>
+      )}
+
+      {activeEmojiSegment && (
+            <div
+              className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none select-none transition-all duration-75 rounded-lg px-3 py-1"
+              style={{
+                top: `${emojiData?.globalStyles.positionY}%`,
+                fontFamily: globalStyles.fontFamily,
+                fontSize: `${emojiData?.globalStyles.fontSize * 2.7}px`,
+                backgroundColor: emojiData?.globalStyles.backgroundColor,
+              }}
+            >
+              {activeEmojiSegment.emoji}
+            </div>
       )}
 
       {/* <div style={{ position: 'absolute', top: '75%', left: '50%', color: 'white', zIndex: 10 }}>

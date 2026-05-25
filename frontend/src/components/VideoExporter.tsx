@@ -24,7 +24,26 @@ interface CaptionPayload {
   segments: CaptionSegment[];
 }
 
-export default function VideoExportPage({ captionData }: { captionData: CaptionPayload }) {
+interface EmojiSegment {
+  id: number;
+  start: number;
+  end: number;
+  emoji: string;
+}
+
+interface EmojiGlobalStyles {
+  fontSize: number;
+  positionY: number;
+  backgroundColor: string;
+}
+
+interface EmojiPayload {
+  status: string;
+  data: EmojiSegment[];
+  globalStyles: EmojiGlobalStyles;
+}
+
+export default function VideoExportPage({ captionData, emojiData }: { captionData: CaptionPayload; emojiData: EmojiPayload }) {
   //  useEffect(() => {
   //      console.log(captionData);
   //      console.log(captionData.globalStyles)
@@ -57,6 +76,7 @@ export default function VideoExportPage({ captionData }: { captionData: CaptionP
           defaultProps: {
             globalStyles: captionData.globalStyles,
             segments: captionData.segments,
+            emojiData: emojiData,
             // Note: videoUrl is intentionally NOT forwarded —
             // MyVideoComponent always uses the hardcoded localhost URL
           },
@@ -64,6 +84,7 @@ export default function VideoExportPage({ captionData }: { captionData: CaptionP
         inputProps: {
           globalStyles: captionData.globalStyles,
           segments: captionData.segments,
+          emojiData: emojiData,
         },
         container: 'mp4',
         videoCodec: 'h264',

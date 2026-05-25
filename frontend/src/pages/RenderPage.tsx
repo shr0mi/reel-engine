@@ -29,8 +29,12 @@ export default function RenderPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const raw = location.state as { captionData: CaptionPayload } | null;
-  const captionData = raw?.captionData ?? null;
+  const state = location.state || {};
+  const {captionData, emojiData} = state;
+
+  useEffect(() => {
+    console.log(captionData?.globalStyles.fontFamily);
+  }, [])
 
   if (!captionData) {
     return (
@@ -52,7 +56,7 @@ export default function RenderPage() {
 
   return (
     <>
-      <VideoExportPage captionData={captionData} />
+      <VideoExportPage captionData={captionData} emojiData={emojiData} />
     </>
   );
 }
