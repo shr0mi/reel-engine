@@ -6,11 +6,11 @@ import TranscribeVideoPage from "@/pages/TranscribeVideosPage"
 import CreateCaptionsPage from "@/pages/CreateCaptionsPage"
 import OverviewPage from "@/pages/OverviewPage"
 import RenderPage from "@/pages/RenderPage"
-import CoolCaptionAgentPage from "@/pages/CoolCaptionAgentPage"
+import HomePage from "@/pages/HomePage"
 
 function App() {
 
-  return (
+  return ( 
     <>
       <SidebarProvider>
       <AppSidebar />
@@ -18,11 +18,11 @@ function App() {
         <SidebarTrigger />
         {/* Routes  */}
           <Routes>
-            <Route path="/" element={<OverviewPage />} />
-            <Route path="/transcribe" element={<TranscribeVideoPage />} />
-            <Route path="/caption" element={<CreateCaptionsPage />} />
-            <Route path="/caption-agent" element={<CoolCaptionAgentPage />} />
-            <Route path="/render" element={<RenderPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/cool-captions/" element={<OverviewPage />} />
+            <Route path="/cool-captions/transcribe" element={<TranscribeVideoPage />} />
+            <Route path="/cool-captions/caption" element={<CreateCaptionsPage />} />
+            <Route path="/cool-captions/render" element={<RenderPage />} />
           
 
         </Routes>

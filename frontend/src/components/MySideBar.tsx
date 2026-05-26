@@ -10,46 +10,64 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-
+import {useLocation, Link} from "react-router"
 import { Video, Captions, View, Download, Bot } from "lucide-react"
 
-const menuItems = [
+const menuItemsCoolCaptions = [
   {
     title: "Overview",
-    url: "/",
+    url: "/cool-captions/",
     icon: View,
   },
   {
     title: "Transcribe Video",
-    url: "/transcribe",
+    url: "/cool-captions/transcribe",
     icon: Video,
   },
   {
     title: "Generate Captions",
-    url: "/caption",
+    url: "/cool-captions/caption",
     icon: Captions,
   },
   {
-    title: "CoolCaption Agent",
-    url: "/caption-agent",
-    icon: Bot,
-  },
-  {
     title: "Render Video",
-    url: "/render",
+    url: "/cool-captions/render",
     icon: Download,
   },
 ]
 
 export function AppSidebar() {
+  // Get path name
+  const {pathname} = useLocation();
+
+  // Determine current module
+  let currentModule: "cool-captions" | null = null;
+  if (pathname.startsWith("/cool-captions")) {
+    currentModule = "cool-captions";
+  }
+
+  const menuItems = currentModule === "cool-captions" ? menuItemsCoolCaptions : [];
+
+  const sideBarLabel = currentModule === "cool-captions" ? "CoolCaptions" : "";
+
+  if (menuItems.length === 0) {
+    return(
+      <>
+      
+      </>
+    )
+  }
+
   return (
     <Sidebar>
         <SidebarHeader className="font-bold">
-            Reel-Engine
+            <Link to="/" className="text-xl font-bold tracking-tight text-zinc-900">
+              AutoReel<span className="text-zinc-500">Engine</span>
+            </Link>
         </SidebarHeader>
         <SidebarContent>
             <SidebarGroup>
-                <SidebarGroupLabel>Application</SidebarGroupLabel>
+                <SidebarGroupLabel>{sideBarLabel}</SidebarGroupLabel>
                 <SidebarGroupContent>
                 <SidebarMenu>
                 {menuItems.map((item) => (

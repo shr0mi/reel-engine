@@ -41,7 +41,7 @@ export default function RenderPage() {
       <div className="p-6 text-center">
         <p className="text-red-500 mb-4">No caption configurations found.</p>
         <button
-          onClick={() => navigate("/transcribe")}
+          onClick={() => navigate("/cool-captions/transcribe")}
           className="px-4 py-2 bg-gray-200 rounded"
         >
           Upload Video

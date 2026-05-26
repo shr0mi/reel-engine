@@ -171,7 +171,7 @@ useEffect(() => {
       }
 
       // Navigate to render page with captionData as state
-      navigate("/render", { state: { captionData, emojiData } });
+      navigate("/cool-captions/render", { state: { captionData, emojiData } });
 
     }
 
