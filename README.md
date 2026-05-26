@@ -14,7 +14,9 @@ The platform will support four content modes:
 - Gives user the ability to change position, font, font-size
 - Adds relevant emoji using an agent created with PydanticAI library and gemini
 
-https://github.com/user-attachments/assets/f57a3caa-2a9f-4720-a8a7-9c3f61853ca5
+https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
+
+
 
 
 
