@@ -204,6 +204,6 @@ async def receive_segments(segments: List[Segment]):
         "globalStyles": {
             "fontSize": 40,
             "positionY": 55,
-            "backgroundColor": "rgba(255, 255, 255, 0.8)",
+            "backgroundColor": "rgba(255, 255, 255, 0.0)",
         }
     }
