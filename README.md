@@ -9,3 +9,14 @@ The platform will support four content modes:
 - **Mister_Memer:** creates brand-safe meme content tailored to the audience’s tone and engagement style to support frequent, low-effort posting.
 ## Demo
 **CoolCaptions:**
+- Uses OpenAI whishper to transcribe the video and generate srt file
+- Uses Remotion to add captions with appropiate animations
+- Gives user the ability to change position, font, font-size
+- Adds relevant emoji using an agent created with PydanticAI library and gemini
+
+https://github.com/user-attachments/assets/f57a3caa-2a9f-4720-a8a7-9c3f61853ca5
+
+
+
+
+
