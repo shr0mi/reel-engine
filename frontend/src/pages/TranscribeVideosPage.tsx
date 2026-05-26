@@ -146,7 +146,7 @@ export default function TranscribeVideoPage() {
               Upload Another Video
             </button>
             <button
-              onClick={() => {navigate('/caption')}}
+              onClick={() => {navigate('/cool-captions/caption')}}
               className="h-9 px-4 py-2 border border-input bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
             >
               Generate Captions
