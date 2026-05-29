@@ -19,7 +19,12 @@ The platform will support four content modes:
 
 https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 
-**Mister_Memer**
+**Mister_Memer:**
+- Uses custom curated list of meme templates
+- Uses meme template description to find appropiate template
+- Uses Brand Consistency Agent to let the LLM know the context
+- Capable of creating both random and topic targeted memes 
+
 ![Mister Memer Showcase](images/mister_memer_img1.png)
 ![Mister Memer Showcase](images/mister_memer_img2.png)
 
