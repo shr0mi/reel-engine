@@ -7,6 +7,9 @@ The platform will support four content modes:
 - **Text2Reel:** converts a text post, article, or script into a short reel by generating scene-by-scene visual direction, captions, and optional voiceover.
 - **ProductAds:** uses uploaded product images or videos to generate high-conversion promotional reels with motion graphics, transitions, and brand-aligned messaging.
 - **Mister_Memer:** creates brand-safe meme content tailored to the audience’s tone and engagement style to support frequent, low-effort posting.
+## Architecture
+![Architecture Flowchart](autoreelengine-graph.svg)
+
 ## Demo
 **CoolCaptions:**
 - Uses OpenAI whishper to transcribe the video and generate srt file
