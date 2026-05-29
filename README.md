@@ -19,6 +19,10 @@ The platform will support four content modes:
 
 https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 
+**Mister_Memer**
+![Mister Memer Showcase](images/mister_memer_img1.png)
+![Mister Memer Showcase](images/mister_memer_img2.png)
+
 
 
 
