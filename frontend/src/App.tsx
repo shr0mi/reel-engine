@@ -7,6 +7,7 @@ import CreateCaptionsPage from "@/pages/CreateCaptionsPage"
 import OverviewPage from "@/pages/OverviewPage"
 import RenderPage from "@/pages/RenderPage"
 import HomePage from "@/pages/HomePage"
+import BrandAgentPage from './pages/BrandAgentPage'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         {/* Routes  */}
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/brand-consistency" element={<BrandAgentPage />} />
             <Route path="/cool-captions/" element={<OverviewPage />} />
             <Route path="/cool-captions/transcribe" element={<TranscribeVideoPage />} />
             <Route path="/cool-captions/caption" element={<CreateCaptionsPage />} />

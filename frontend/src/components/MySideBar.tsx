@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {useLocation, Link} from "react-router"
-import { Video, Captions, View, Download, Bot } from "lucide-react"
+import { Video, Captions, View, Download, Bot, Settings } from "lucide-react"
 
 const menuItemsCoolCaptions = [
   {
@@ -85,7 +85,18 @@ export function AppSidebar() {
             </SidebarGroup>
             <SidebarGroup />
         </SidebarContent>
-        <SidebarFooter />
+        <SidebarFooter className="mb-5">
+          <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link to="/brand-consistency"> {/* Adjust your route path here */}
+                            <Settings className="h-4 w-4" />
+                            <span>Brand Consistency Agent</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarFooter>
     </Sidebar>
   )
 }
