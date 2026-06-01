@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import { Link } from 'react-router';
 import { 
   Menu, 
@@ -8,7 +8,7 @@ import {
   Megaphone, 
   Laugh, 
   ArrowRight, 
-  CheckCircle2, 
+  Loader2, 
   Building2,
   FileText,
   Target,
@@ -26,8 +26,28 @@ interface Feature {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface BrandDetails{
+    brandName: string;
+    brandDescription: string;
+    customerProfile: string;
+    contentPreferences: string;
+}
+
 export default function BrandAgentPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    // States to manage input, loading, and the final output
+    const [prompt, setPrompt] = useState<string>('');
+    const [promptLoading, setPromptLoading] = useState<boolean>(false);
+
+    // Card 2 States (initialized empty, populated by the API, and editable by the user)
+    const [brandName, setBrandName] = useState<string>('');
+    const [brandDescription, setBrandDescription] = useState<string>('');
+    const [customerProfile, setCustomerProfile] = useState<string>('');
+    const [contentPreferences, setContentPreferences] = useState<string>('');
+    const [brandProfileLoading, setBrandProfileLoading] = useState<boolean>(false);
 
     const features: Feature[] = [
         {
@@ -79,6 +99,119 @@ export default function BrandAgentPage() {
         icon: Laugh,
         },
     ];
+
+    // At start load all the existing brand details
+    useEffect(() => {
+        setIsLoading(true);
+        const fetchBrandDetails = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/brand-agent/brand-profile');
+                const data = await response.json();
+                setBrandName(data.brand_name || '');
+                setPrompt(data.brand_prompt || '');
+                setBrandDescription(data.what_brand_does || '');
+                setCustomerProfile(data.who_are_customers || '');
+                setContentPreferences(data.what_customers_like || '');
+            } catch (error) {
+                console.error("Failed to fetch brand details:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchBrandDetails();
+    }, []);
+
+
+    const handleGenerate = async () => {
+        if (!prompt.trim()) {
+        alert("Please enter a brand prompt first.");
+        return;
+        }
+
+        setPromptLoading(true);
+        try {
+        const response = await fetch('http://127.0.0.1:8000/api/brand-agent/brand/prompt', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ brand_prompt: prompt }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Map the snake_case backend response to your camelCase Interface
+        const mappedData: BrandDetails = {
+            brandName: data.brand_name,
+            brandDescription: data.what_brand_does,
+            customerProfile: data.who_are_customers,
+            contentPreferences: data.what_customers_like,
+        };
+
+        // Directly update individual input states with the returned data
+        setBrandName(data.brand_name || '');
+        setBrandDescription(data.what_brand_does || '');
+        setCustomerProfile(data.who_are_customers || '');
+        setContentPreferences(data.what_customers_like || '');
+
+
+        console.log("Successfully fetched brand details:", mappedData);
+
+        } catch (error) {
+        console.error("Failed to generate brand details:", error);
+        alert("Something went wrong while connecting to the AI agent.");
+        } finally {
+        setPromptLoading(false);
+        }
+    };
+
+
+    const handleSaveBrandProfile = async () => {
+        setBrandProfileLoading(true);
+
+        try{
+            const response = await fetch('http://127.0.0.1:8000/api/brand-agent/brand/details', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    brand_name: brandName,
+                    "what_brand_does": brandDescription,
+                    "who_are_customers": customerProfile,
+                    "what_customers_like": contentPreferences
+                }),
+            })
+        
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Brand profile saved successfully:", data);
+        } catch (error) {
+        console.error("Failed to generate brand details:", error);
+        alert("Something went wrong while connecting to the AI agent.");
+        } finally {
+        setBrandProfileLoading(false);
+        }
+
+    }
+
+    if(isLoading){
+        return(
+        <div className="flex flex-col items-center justify-center min-h-[200px] w-full gap-2 text-sm text-gray-500">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span className="animate-pulse">Fetching Data From Backend...</span>
+        </div>
+      )
+    }
 
     return(
         <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
@@ -153,15 +286,26 @@ export default function BrandAgentPage() {
                         
                         {/* Scrollable Textfield */}
                         <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        disabled={promptLoading}
                         className="w-full h-40 min-h-[100px] rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-y overflow-y-auto transition-all"
                         placeholder="Enter or review your main brand prompt guidelines here..."
                         />
 
                         {/* Action Button */}
                         <div className="flex justify-end">
-                        <button className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                            Generate
-                            <ArrowRight className="w-4 h-4" />
+                        <button 
+                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                            onClick={handleGenerate}
+                            disabled={promptLoading}
+                        >
+                            {promptLoading ? 'Generating...' : 'Generate'}
+                            {
+                                !promptLoading ? 
+                                <ArrowRight className="w-4 h-4" /> :
+                                <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                            }   
                         </button>
                         </div>
                     </div>
@@ -179,6 +323,8 @@ export default function BrandAgentPage() {
                         </label>
                         <input
                             type="text"
+                            value={brandName}
+                            onChange={(e) => setBrandName(e.target.value)}
                             placeholder="e.g. Acme Corp"
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                         />
@@ -192,6 +338,8 @@ export default function BrandAgentPage() {
                         </label>
                         {/* Scrollable Textfield */}
                         <textarea
+                        value={brandDescription}
+                        onChange={(e) => setBrandDescription(e.target.value)}
                         className="w-full h-24 min-h-[50px] rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-y overflow-y-auto transition-all"
                         placeholder="e.g. Eco-friendly SaaS packaging solutions"
                         />
@@ -205,6 +353,8 @@ export default function BrandAgentPage() {
                         </label>
                         {/* Scrollable Textfield */}
                         <textarea
+                        value={customerProfile}
+                        onChange={(e) => setCustomerProfile(e.target.value)}
                         className="w-full h-24 min-h-[50px] rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-y overflow-y-auto transition-all"
                         placeholder="e.g. B2B e-commerce brand managers"
                         />
@@ -218,6 +368,8 @@ export default function BrandAgentPage() {
                         </label>
                         {/* Scrollable Textfield */}
                         <textarea
+                        value={contentPreferences}
+                        onChange={(e) => setContentPreferences(e.target.value)}
                         className="w-full h-24 min-h-[50px] rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-y overflow-y-auto transition-all"
                         placeholder="e.g. In-depth case studies and minimalist graphics"
                         />
@@ -225,9 +377,15 @@ export default function BrandAgentPage() {
 
                         {/* Action Button */}
                         <div className="flex justify-end">
-                        <button className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                            Save Brand Profile
-                            <Save className="w-4 h-4" />
+                        <button onClick={handleSaveBrandProfile} 
+                        disabled={brandProfileLoading}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                            {brandProfileLoading ? 'Saving...' : 'Save Brand Profile'}
+                            {
+                                !brandProfileLoading ? 
+                                <Save className="w-4 h-4" /> :
+                                <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                            }
                         </button>
                         </div>
 
