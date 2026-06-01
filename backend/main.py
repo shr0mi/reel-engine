@@ -15,15 +15,13 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 from coolCaptionsAgent import Segment, add_emojis_to_segments
 
+from routers import brand_agent_router
+
 load_dotenv()
 
 # 1. Initialize Supabase Client
 # In production, use os.environ.get("SUPABASE_URL") after loading a dotenv file.
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+from database import supabase
 BUCKET_NAME = "videos"
 
 app = FastAPI()
@@ -207,3 +205,6 @@ async def receive_segments(segments: List[Segment]):
             "backgroundColor": "rgba(255, 255, 255, 0.0)",
         }
     }
+
+
+app.include_router(brand_agent_router.router, prefix="/api/brand-agent")
