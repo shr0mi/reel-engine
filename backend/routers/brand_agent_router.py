@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from brand_agent import analyze_brand_prompt
 # Import the existing supabase client from your main app file
 from database import supabase
 
@@ -38,19 +39,33 @@ def get_brand_profile():
 
 
 @router.post("/brand/prompt")
-def update_brand_prompt(payload: BrandPromptUpdate):
-    """Updates ONLY the brand_prompt field for ID = 1."""
-    response = (
-        supabase.table("brand_profiles")
-        .update({"brand_prompt": payload.brand_prompt})
-        .eq("id", 1)
-        .execute()
-    )
-    
-    if not response.data:
-        raise HTTPException(status_code=404, detail="Could not update. Profile ID 1 missing.")
-        
-    return {"message": "Brand prompt updated successfully", "data": response.data[0]}
+async def update_brand_prompt(payload: BrandPromptUpdate):
+    """
+    Updates ONLY the brand_prompt field for ID = 1.
+    goes through brand_agent and returns response
+    """
+
+    if not payload.brand_prompt.strip():
+        raise HTTPException(status_code=400, detail="Brand prompt cannot be empty.")
+
+    try:
+        # Call the async agent function
+        analysis_result = await analyze_brand_prompt(payload.brand_prompt)
+
+        response = (
+            supabase.table("brand_profiles")
+            .update({"brand_prompt": payload.brand_prompt})
+            .eq("id", 1)
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Could not update. Profile ID 1 missing.")
+
+        return analysis_result
+    except Exception as e:
+        # Catch unexpected errors from the LLM or API lines
+        raise HTTPException(status_code=500, detail=f"An error occurred during analysis: {str(e)}")
 
 
 @router.post("/brand/details")
