@@ -15,7 +15,7 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 from coolCaptionsAgent import Segment, add_emojis_to_segments
 
-from routers import brand_agent_router
+from routers import brand_agent_router, text_to_reel_router
 
 load_dotenv()
 
@@ -208,3 +208,4 @@ async def receive_segments(segments: List[Segment]):
 
 
 app.include_router(brand_agent_router.router, prefix="/api/brand-agent")
+app.include_router(text_to_reel_router.router, prefix="/api/text-to-reel")
