@@ -9,21 +9,34 @@ ToneType = Literal["inspirational", "emotional", "peaceful", "funny", "education
 class StoryBlock(BaseModel):
     paragraph: int = Field(description="Serial number tracking the sequence (1, 2, 3, ...)")
     spoken_text: str = Field(description="The voiceover or spoken script text. Must be entirely in the requested language.")
-    visual_prompt: List[str] = Field(description="A list of specific visual visual scene descriptions or B-roll ideas that match this paragraph.")
+    visual_prompt: List[str] = Field(description="A list of specific visual visual scene descriptions or B-roll ideas that match this paragraph. This field MUST ALWAYS BE IN ENGLISH, regardless of the language requested for the spoken_text.")
 
 class ScriptResponse(BaseModel):
     tone: ToneType = Field(description="The overall emotional or strategic tone chosen for the reel.")
     story_blocks: List[StoryBlock] = Field(description="The chronological chronological breakdown of the script scenes.")
 
-# Initialize your preferred model (e.g., OpenAI, Gemini, or a local model via Ollama)
-# Make sure your API keys (like OPENAI_API_KEY) are set in your environment variables.
+# Initialize your preferred model
 agent = Agent(
     'google:gemini-2.5-flash',
     output_type=ScriptResponse,
     instructions=(
         "You are an elite viral short-form video scriptwriter specializing in Reels, TikToks, and YouTube Shorts. "
         "Your goal is to write a high-retaining, engaging script tailored to the brand's profile and the specified tone. "
-        "Strictly adhere to the user's requested language and pacing constraints."
+        "Strictly adhere to the user's requested language(only in spoken_text) and pacing constraints.\n\n"
+
+        "CRITICAL TTS FORMATTING RULE FOR BANGLA LANGUAGE:\n"
+        "If the requested language for 'spoken_text' is Bangla (Bengali), you must format specific English terms to ensure compatibility with a native Bengali TTS engine:\n"
+        "1. NEVER leave English acronyms as raw English letters (e.g., Do NOT write 'GTA', 'RDR', 'AI', 'PC').\n"
+        "2. Transliterate English acronyms phonetically into Bengali script so the native voice pronounces them like English letter names.\n"
+        "3. If an English number accompanies a game or tech title, write out the English pronunciation of that number in Bengali script.\n\n"
+        
+        "Examples for Bangla scripts:\n"
+        "- 'GTA 5' must be written as 'জিটিএ ফাইভ'\n"
+        "- 'RDR2' must be written as 'আরডিআর টু'\n"
+        "- 'AI' must be written as 'এআই'\n"
+        "- 'PC' must be written as 'পিসি'\n"
+        "- 'NPC' must be written as 'এনপিসি'\n\n"
+        "Standard English words that are easily blended (like 'Minecraft', 'Gamer', 'Download') can remain in English script inside the Bangla text. Only apply this transliteration to acronyms, abbreviations, and title-specific numbers."
     )
 )
 

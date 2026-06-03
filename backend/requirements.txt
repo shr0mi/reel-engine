@@ -6,3 +6,4 @@ pydantic
 pydantic-ai
 supabase
 dotenv
+edge-tts

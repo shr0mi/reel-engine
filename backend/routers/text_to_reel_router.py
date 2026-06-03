@@ -1,12 +1,15 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from database import supabase
 from pydantic import BaseModel, Field
 from typing import Literal
 from reelWriterAgent import generate_reel_script, ScriptResponse
+from text_to_reel_tts import generate_voiceover, ReelDataResponse
+import os
 
 class ScriptRequest(BaseModel):
     prompt: str = Field(default="", description="The specific topic or concept. Leave blank for a random generation.")
-    language: Literal["en", "ban"] = Field(..., description="Language configuration: 'en' for English, 'ban' for Bangla.")
+    language: Literal["en", "bn"] = Field(..., description="Language configuration: 'en' for English, 'bn' for Bangla.")
     duration: int = Field(..., description="Target duration in seconds (e.g., 60).")
 
 router = APIRouter(
@@ -49,3 +52,25 @@ async def create_reel_script(request: ScriptRequest):
     except Exception as e:
         # Gracefully capture schema mismatches or LLM dropouts
         raise HTTPException(status_code=500, detail=f"Script generation failed: {str(e)}")
+    
+
+class GenerateAudioResponse(ReelDataResponse):
+    success: bool
+    
+@router.post("/generate-audio", response_model=GenerateAudioResponse)
+async def create_reel_audio(script: ScriptResponse, language: str = "en"):
+    """
+    Accepts a generated script response, processes TTS in memory, 
+    overwrites the static file in Supabase, and returns its public URL.
+    """
+    try:
+        # Generate and upload entirely in memory
+        reel_data: ReelDataResponse = await generate_voiceover(script=script, language=language)
+        
+        return GenerateAudioResponse(
+            success=True,
+            **reel_data.model_dump()
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Audio pipeline failed: {str(e)}")
