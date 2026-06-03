@@ -9,7 +9,12 @@ ToneType = Literal["inspirational", "emotional", "peaceful", "funny", "education
 class StoryBlock(BaseModel):
     paragraph: int = Field(description="Serial number tracking the sequence (1, 2, 3, ...)")
     spoken_text: str = Field(description="The voiceover or spoken script text. Must be entirely in the requested language.")
-    visual_prompt: List[str] = Field(description="A list of specific visual visual scene descriptions or B-roll ideas that match this paragraph. This field MUST ALWAYS BE IN ENGLISH, regardless of the language requested for the spoken_text.")
+    visual_prompt: List[str] = Field(description=(
+        "A sequence of 2-4 simple, highly generic English search queries for the Pexels API. "
+        "CRITICAL: Use ONLY basic, high-level nouns or standard category terms (e.g., 'frustrated gamer', 'computer games', 'dhaka city'). "
+        "NEVER combine multiple actions or abstract concepts into a single query (e.g., Do NOT write 'struggling computer graphics' or 'gamer looking at old pc'). "
+        "Keep each query to 1-3 words max."
+    ))
 
 class ScriptResponse(BaseModel):
     tone: ToneType = Field(description="The overall emotional or strategic tone chosen for the reel.")
@@ -23,6 +28,16 @@ agent = Agent(
         "You are an elite viral short-form video scriptwriter specializing in Reels, TikToks, and YouTube Shorts. "
         "Your goal is to write a high-retaining, engaging script tailored to the brand's profile and the specified tone. "
         "Strictly adhere to the user's requested language(only in spoken_text) and pacing constraints.\n\n"
+
+        "CRITICAL VISUAL PROMPT CONSTRAINT:\n"
+        "The 'visual_prompt' list must contain ONLY generic, broad search terms suitable for a stock video API (like Pexels).\n"
+        "- DO NOT create complex, descriptive, or hyper-specific phrases.\n"
+        "- DO NOT mix abstract concepts together (e.g., avoid 'struggling computer graphics').\n"
+        "- DO use simple, atomic keywords representing a single clean subject or location.\n\n"
+        "Examples of BAD vs. GOOD queries:\n"
+        "  * BAD: 'frustrated gamer old PC' -> GOOD: 'frustrated gamer'\n"
+        "  * BAD: 'struggling computer graphics' -> GOOD: 'computer games'\n"
+        "  * BAD: 'Dhaka city street view' -> GOOD: 'Dhaka city'\n\n"
 
         "CRITICAL TTS FORMATTING RULE FOR BANGLA LANGUAGE:\n"
         "If the requested language for 'spoken_text' is Bangla (Bengali), you must format specific English terms to ensure compatibility with a native Bengali TTS engine:\n"
