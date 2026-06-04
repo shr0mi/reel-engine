@@ -26,6 +26,24 @@ interface Feature {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+// Script Generation Interphases (first section)
+interface ScriptInput {
+  prompt: string;
+  language: 'en' | 'bn';
+  duration: 40 | 60 | 120;
+}
+
+interface StoryBlock {
+  paragraph: number;
+  spoken_text: string;
+  visual_prompt: string[];
+}
+
+interface ScriptOutput {
+  tone: string;
+  story_blocks: StoryBlock[];
+}
+
 export default function TextToReelPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -80,6 +98,53 @@ export default function TextToReelPage() {
         },
     ];
 
+    // Program States
+
+    // Script Generation States (first section)
+    const [scriptInput, setScriptInput] = useState<ScriptInput>({
+        prompt: '',
+        language: 'en',
+        duration: 40,
+    });
+
+    const [scriptOutput, setScriptOutput] = useState<ScriptOutput | null>(null);
+    const [isScriptLoading, setIsScriptLoading] = useState<boolean>(false);
+    const [scriptError, setScriptError] = useState<string | null>(null);
+
+
+    // Api handlers 
+
+    // Script Generation Api handlers (first section)
+    const handleGenerateScript = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsScriptLoading(true);
+        setScriptError(null);
+
+        try {
+        const response = await fetch('http://127.0.0.1:8000/api/text-to-reel/generate-script', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scriptInput),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with a status of ${response.status}`);
+        }
+
+        const data: ScriptOutput = await response.json();
+        
+        setScriptOutput(data);
+        
+        } catch (err: any) {
+        setScriptError(err.message || 'An unexpected error occurred while generating the script.');
+        } finally {
+        setIsScriptLoading(false);
+        console.log(scriptOutput);
+        }
+    };
+
     return(
         <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
       
@@ -130,8 +195,91 @@ export default function TextToReelPage() {
                 )}
             </header>
 
-            <main className="pt-16">
-                <h1>Text to Reel</h1>
+            <main className="pt-16 max-w-xl mx-auto">
+                <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 mb-8 text-center">
+                Text to Reel
+                </h1>
+
+                {/* First section: Script Generation */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+                <form onSubmit={handleGenerateScript} className="space-y-5">
+                    {/* Prompt Input */}
+                    <div>
+                    <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                        Prompt
+                    </label>
+                    <textarea
+                        id="prompt"
+                        rows={5}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white shadow-inner focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm resize-none"
+                        placeholder="Describe your video idea..."
+                        value={scriptInput.prompt}
+                        onChange={(e) => setScriptInput({ ...scriptInput, prompt: e.target.value })}
+                        required
+                    />
+                    </div>
+
+                    {/* Select Options Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                    {/* Language Select */}
+                    <div>
+                        <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+                        Language
+                        </label>
+                        <select
+                        id="language"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
+                        value={scriptInput.language}
+                        onChange={(e) => setScriptInput({ ...scriptInput, language: e.target.value as 'en' | 'bn' })}
+                        >
+                        <option value="en">English (en)</option>
+                        <option value="bn">Bengali (bn)</option>
+                        </select>
+                    </div>
+
+                    {/* Duration Select */}
+                    <div>
+                        <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                        Duration (seconds)
+                        </label>
+                        <select
+                        id="duration"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
+                        value={scriptInput.duration}
+                        onChange={(e) => setScriptInput({ ...scriptInput, duration: Number(e.target.value) as 40 | 60 | 120 })}
+                        >
+                        <option value={40}>40s</option>
+                        <option value={60}>60s</option>
+                        <option value={120}>120s</option>
+                        </select>
+                    </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                    type="submit"
+                    disabled={isScriptLoading}
+                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors duration-150 disabled:bg-neutral-400 flex items-center justify-center gap-2"
+                    >
+                    {isScriptLoading ? (
+                        <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating Script...
+                        </>
+                    ) : (
+                        'Generate Script'
+                    )}
+                    </button>
+                </form>
+
+                {/* Inline Error Message */}
+                {scriptError && (
+                    <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
+                    {scriptError}
+                    </div>
+                )}
+                </div>
+
             </main>
 
         </div>
