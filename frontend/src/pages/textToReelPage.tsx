@@ -44,6 +44,29 @@ interface ScriptOutput {
   story_blocks: StoryBlock[];
 }
 
+// Audio Generation Interfaces (second section)
+interface AudioStoryBlock {
+  paragraph_id: number;
+  start: number;
+  end: number;
+  visual_prompt: string[];
+}
+
+interface Caption {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+}
+
+interface AudioOutput {
+  tone: string;
+  story_blocks: AudioStoryBlock[];
+  captions: Caption[];
+  audio_url: string;
+  success: boolean;
+}
+
 export default function TextToReelPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -106,10 +129,15 @@ export default function TextToReelPage() {
         language: 'en',
         duration: 40,
     });
-
     const [scriptOutput, setScriptOutput] = useState<ScriptOutput | null>(null);
     const [isScriptLoading, setIsScriptLoading] = useState<boolean>(false);
     const [scriptError, setScriptError] = useState<string | null>(null);
+
+    // Audio Generation States (second section)
+    const [audioOutput, setAudioOutput] = useState<AudioOutput | null>(null);
+    const [isAudioLoading, setIsAudioLoading] = useState<boolean>(false);
+    const [audioError, setAudioError] = useState<string | null>(null);
+    const [isAudioSectionVisible, setIsAudioSectionVisible] = useState<boolean>(false);
 
 
     // Api handlers 
@@ -119,6 +147,8 @@ export default function TextToReelPage() {
         e.preventDefault();
         setIsScriptLoading(true);
         setScriptError(null);
+
+        setIsAudioSectionVisible(false); // Hide section if user runs it again
 
         try {
         const response = await fetch('http://127.0.0.1:8000/api/text-to-reel/generate-script', {
@@ -134,8 +164,8 @@ export default function TextToReelPage() {
         }
 
         const data: ScriptOutput = await response.json();
-        
         setScriptOutput(data);
+        setIsAudioSectionVisible(true); // Smoothly reveal section 2
         
         } catch (err: any) {
         setScriptError(err.message || 'An unexpected error occurred while generating the script.');
@@ -144,6 +174,57 @@ export default function TextToReelPage() {
         console.log(scriptOutput);
         }
     };
+
+    // Audio Generation Api handlers (second section)
+
+    // handle paragraph change
+    const handleParagraphChange = (index: number, newValue: string) => {
+        if (!scriptOutput) return;
+
+        const updatedBlocks = scriptOutput.story_blocks.map((block, i) => {
+        if (i === index) {
+            return { ...block, spoken_text: newValue };
+        }
+        return block;
+        });
+
+        setScriptOutput({
+        ...scriptOutput,
+        story_blocks: updatedBlocks,
+        });
+    };
+
+    // generate audio
+    const handleGenerateAudio = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!scriptOutput) return;
+
+        setIsAudioLoading(true);
+        setAudioError(null);
+
+        console.log(scriptOutput);
+
+        try {
+        const response = await fetch('http://127.0.0.1:8000/api/text-to-reel/generate-audio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(scriptOutput),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Audio generation failed with status ${response.status}`);
+        }
+
+        const data: AudioOutput = await response.json();
+        setAudioOutput(data);
+        } catch (err: any) {
+        setAudioError(err.message || 'An unexpected error occurred while generating the audio.');
+        } finally {
+        setIsAudioLoading(false);
+        }
+    };
+
+
 
     return(
         <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
@@ -276,6 +357,65 @@ export default function TextToReelPage() {
                 {scriptError && (
                     <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
                     {scriptError}
+                    </div>
+                )}
+                </div>
+
+                {/* Second section: Audio Generation */}
+                <div
+                className={`transition-all mt-4 duration-500 ease-in-out origin-top ${
+                    isAudioSectionVisible 
+                    ? 'opacity-100 max-h-[2000px] translate-y-0 visibility-visible' 
+                    : 'opacity-0 max-h-0 -translate-y-4 overflow-hidden pointer-events-none'
+                }`}
+                >
+                {scriptOutput && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+                    <h2 className="text-lg font-medium text-neutral-900 mb-4">Edit Script Paragraphs</h2>
+                    
+                    <form onSubmit={handleGenerateAudio} className="space-y-4">
+                        {/* Dynamic Paragraph Text Areas */}
+                        <div className="space-y-4">
+                        {scriptOutput.story_blocks.map((block, index) => (
+                            <div key={index}>
+                            <label htmlFor={`paragraph-${index}`} className="block text-xs font-medium text-gray-500 mb-1">
+                                Paragraph {index + 1}
+                            </label>
+                            <textarea
+                                id={`paragraph-${index}`}
+                                rows={3}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white shadow-inner focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm resize-none"
+                                value={block.spoken_text}
+                                onChange={(e) => handleParagraphChange(index, e.target.value)}
+                                required
+                            />
+                            </div>
+                        ))}
+                        </div>
+
+                        {/* Generate Audio Button */}
+                        <button
+                        type="submit"
+                        disabled={isAudioLoading}
+                        className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors duration-150 disabled:bg-neutral-400 flex items-center justify-center gap-2"
+                        >
+                        {isAudioLoading ? (
+                            <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Generating Audio...
+                            </>
+                        ) : (
+                            'Generate Audio'
+                        )}
+                        </button>
+                    </form>
+
+                    {/* Audio Error Message */}
+                    {audioError && (
+                        <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
+                        {audioError}
+                        </div>
+                    )}
                     </div>
                 )}
                 </div>
