@@ -8,6 +8,7 @@ import OverviewPage from "@/pages/OverviewPage"
 import RenderPage from "@/pages/RenderPage"
 import HomePage from "@/pages/HomePage"
 import BrandAgentPage from './pages/BrandAgentPage'
+import TextToReelPage from './pages/textToReelPage'
 
 function App() {
 
@@ -25,6 +26,8 @@ function App() {
             <Route path="/cool-captions/transcribe" element={<TranscribeVideoPage />} />
             <Route path="/cool-captions/caption" element={<CreateCaptionsPage />} />
             <Route path="/cool-captions/render" element={<RenderPage />} />
+
+            <Route path="/text-to-reel" element={<TextToReelPage />} />
           
 
         </Routes>

@@ -39,7 +39,7 @@ export default function HomePage() {
     {
       id: 'text-2-reel',
       name: 'Text2Reel',
-      slug: '/',
+      slug: '/text-to-reel',
       description: 'Convert scripts, articles, or text posts into ready-to-publish short reels.',
       points: [
         'Scene-by-scene visual direction AI generation',
