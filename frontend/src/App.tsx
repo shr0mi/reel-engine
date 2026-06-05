@@ -9,6 +9,8 @@ import RenderPage from "@/pages/RenderPage"
 import HomePage from "@/pages/HomePage"
 import BrandAgentPage from './pages/BrandAgentPage'
 import TextToReelPage from './pages/textToReelPage'
+import GenerateMeme from "@/pages/GenerateMeme"
+
 
 function App() {
 
@@ -28,7 +30,7 @@ function App() {
             <Route path="/cool-captions/render" element={<RenderPage />} />
 
             <Route path="/text-to-reel" element={<TextToReelPage />} />
-          
+            <Route path="/mister-memer/generate" element={<GenerateMeme />} />
 
         </Routes>
       </main>
