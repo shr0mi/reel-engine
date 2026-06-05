@@ -1,0 +1,155 @@
+[
+  {
+    "id": 1,
+    "name": "Cinema",
+    "img": "cinema.jpg",
+    "vibe": "when something unexpectedly goes right which feels almost like fiction",
+    "structure": "TOP: Set up a flawless scenario, unexpected win, or high-quality moment. BOTTOM: Always 'Absolute Cinema' to close the joke.",
+    "ex_top": "When the rickshaw uncle takes the perfect shortcut through Dhanmondi and you arrive 20 mins early",
+    "ex_bottom": "Absolute Cinema"
+  },
+  {
+    "id": 2,
+    "name": "cheer",
+    "img": "cheer.jpg",
+    "vibe": "when you achieve a small victory or milestone that feels like a huge success",
+    "structure": "TOP: Relatable milestone, success, or achievement achieved against the odds. BOTTOM: Always 'Cheers to that'.",
+    "ex_top": "When you submit the assignment 3 seconds before the deadline",
+    "ex_bottom": "Cheers to that"
+  },
+  {
+    "id": 3,
+    "name": "Think",
+    "img": "think.jpg",
+    "vibe": "when you find a absurd loophole or technicality of a problem or limitation",
+    "structure": "TOP: A rule, problem, or limitation starting with 'You can't have' or 'You can't do'. BOTTOM: A clever, absurd workaround that bypasses the problem by technicality.",
+    "ex_top": "You can't overspend on food",
+    "ex_bottom": "If bKash balance is already zero"
+  },
+  {
+    "id": 4,
+    "name": "Wojack",
+    "img": "wojack.jpg",
+    "vibe": "when you already in a uncertain sitation but then it becomes even worse",
+    "structure": "TOP: Expectation or an ongoing normal task. BOTTOM: A sudden, devastating punchline or oversight that ruins the entire situation.",
+    "ex_top": "Finally got a window seat on the Dhaka-Chittagong train",
+    "ex_bottom": "AC broken. It's July."
+  },
+  {
+    "id": 5,
+    "name": "drugs",
+    "img": "drugs.jpg",
+    "vibe": "when you craving for something that is commonly available but suddenly becomes scarce",
+    "structure": "TOP: Sudden loss or extreme deficit of an everyday essential item or service. BOTTOM: Desperate request following the rigid format 'Y'all got any more of them [Noun]?'",
+    "ex_top": "When load shedding hits during a live match",
+    "ex_bottom": "Y'all got any more of them generators?"
+  },
+  {
+    "id": 6,
+    "name": "hehe",
+    "img": "hehe.jpg",
+    "vibe": "when you do act of mischief and enjoying the chaos in secret",
+    "structure": "TOP: Secretly plotting a minor prank, bad situation, or quietly watching chaos unfold. BOTTOM: A mischievous, smug punchline revealing you caused it or are enjoying it.",
+    "ex_top": "Me watching my friend get grilled by the teacher",
+    "ex_bottom": "For the answer I whispered wrong on purpose"
+  },
+  {
+    "id": 7,
+    "name": "help",
+    "img": "help.jpg",
+    "vibe": "Asking for any favor or support that you will probably be rejected",
+    "structure": "TOP: Returning to ask for the exact same favor, support, or access after being cut off. BOTTOM: Explicitly must read 'I am once again asking for [Noun/Action]'.",
+    "ex_top": "It's the 1st of the month and Abbu just got paid",
+    "ex_bottom": "I am once again asking for my allowance"
+  },
+  {
+    "id": 8,
+    "name": "mocking",
+    "img": "mocking.jpg",
+    "vibe": "sarcastically mocking a statement that is cliche but was said with a serious tone",
+    "structure": "TOP: A serious, annoying, or cliché statement made by an authority figure or company. BOTTOM: Repeat the top statement word-for-word using alternating uppercase and lowercase letters.",
+    "ex_top": "Relative: Just study hard and you'll get into Buet",
+    "ex_bottom": "jUsT sTuDy HaRd AnD yOu'Ll GeT iNtO bUeT"
+  },
+  {
+    "id": 9,
+    "name": "one_does_not",
+    "img": "one_does_not.jpg",
+    "vibe": "pointing a notoriously difficult everyday action that people often joke about",
+    "structure": "TOP: Must strictly read 'One does not simply'. BOTTOM: Complete the sentence with a notoriously difficult, impossible, or socially delicate action.",
+    "ex_top": "One does not simply",
+    "ex_bottom": "Leave a Bangladeshi wedding before the biryani is served"
+  },
+  {
+    "id": 10,
+    "name": "ours",
+    "img": "ours.jpg",
+    "vibe": "when someone wants a share of something you have",
+    "structure": "TOP: Someone asserting individual ownership over their [Item Name]. BOTTOM: A sudden claims shift stating rigidly: 'Our [Item Name]'. Here both the top and bottom must refer to the same item",
+    "ex_top": "When you open a bag of chips in the classroom",
+    "ex_bottom": "ClassMates: Our chips"
+  },
+  {
+    "id": 11,
+    "name": "rainbow",
+    "img": "rainbow.jpg",
+    "vibe": "when imagination is ironically the only solution to a real-world problem",
+    "structure": "TOP: Pointing out a highly unrealistic solution to a massive real-world problem. BOTTOM: A single sarcastic word, typically 'Imagination' or 'Nobody Cares'.",
+    "ex_top": "How Dhaka will solve its traffic problem by 2030",
+    "ex_bottom": "Imagination"
+  },
+  {
+    "id": 12,
+    "name": "Skeptical Kid",
+    "img": "rizz.jpg",
+    "vibe": "when you are baffled by a 1st world habit that is not necessary",
+    "structure": "TOP: Must strictly begin with 'So you're telling me'. BOTTOM: Complete the sentence with an absurd, confusing, or highly questionable real-world habit.",
+    "ex_top": "So you're telling me",
+    "ex_bottom": "You pay money just to wake on a treadmill?"
+  },
+  {
+    "id": 13,
+    "name": "scientist",
+    "img": "scientist.jpg",
+    "vibe": "when you accomplish a completely mundane task but feel like a genius for doing it",
+    "structure": "TOP: Accomplishing a completely basic, mundane task. BOTTOM: Must strictly follow the phrase: 'I'm something of a X myself'.Where X is a grandiose title",
+    "ex_top": "When I turn off mobile data and the app finally loads",
+    "ex_bottom": "I'm something of a scientist myself"
+  },
+  {
+    "id": 14,
+    "name": "Waiting Skeleton",
+    "img": "skeleton.jpg",
+    "vibe": "waiting something that is taking forever to happen",
+    "structure": "TOP: Waiting for an incredibly delayed, slow, or near-impossible future event. BOTTOM: Expressing hopeless patience like 'Still waiting' or 'Any day now'.",
+    "ex_top": "Waiting for Dhaka Metro Rail to reach Uttara North",
+    "ex_bottom": "Still waiting"
+  },
+  {
+    "id": 15,
+    "name": "toy_story",
+    "img": "toy_story.jpg",
+    "vibe": "seeing an overwhelming abundance of something bad that is inescapable",
+    "structure": "TOP: Observing an excessive influx of bad trends, chores, or work. BOTTOM: Conclude strictly with the capitalized format '[Noun] Everywhere'.",
+    "ex_top": "Opening Facebook during exam season",
+    "ex_bottom": "Motivational Quotes Everywhere"
+  },
+  {
+    "id": 16,
+    "name": "Truman Director",
+    "img": "truman.jpg",
+    "vibe": "when something is orchestrated perfectly just to be ruined by an twist",
+    "structure": "TOP: A direct plan to make a setup pleasant, beautiful, or simple for someone. BOTTOM: An immediate malicious twist that completely contradicts and ruins the top setup.",
+    "ex_top": "Finally get a smooth uninterrupted internet connection for an important meeting",
+    "ex_bottom": "Now schedule 3 hours of load shedding"
+  },
+  {
+    "id": 17,
+    "name": "Futurama Fry",
+    "img": "sus.jpg",
+    "vibe": "When you are suspicious about someone doing a sketchy action",
+    "structure": "TOP: Must strictly begin with 'Not sure if [Option A]'. BOTTOM: Conclude the comparative suspicion with 'Or [Option B]'.",
+    "ex_top": "Not sure if the rickshaw uncle actually doesn't know the address",
+    "ex_bottom": "Or if he's taking the long route to charge double"
+  }
+]

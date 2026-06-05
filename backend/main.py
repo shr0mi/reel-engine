@@ -14,6 +14,12 @@ from faster_whisper import WhisperModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from coolCaptionsAgent import Segment, add_emojis_to_segments
+#mister-meme imports
+from PIL import Image
+from fastapi import Form
+from typing import Optional
+from fastapi.staticfiles import StaticFiles
+from misterMemerAgent import generate_meme
 
 from routers import brand_agent_router, text_to_reel_router
 
@@ -32,12 +38,17 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Content-Range", "Accept-Ranges"],
 )
+
+# Serve meme template images from the backend templates folder
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/templates", StaticFiles(directory=BASE_DIR / "templates"), name="templates")
 
 # Keep local TEMP dirs just for whisper's processing workspace
 TEMP_DIR = "temp_processing"
@@ -205,6 +216,55 @@ async def receive_segments(segments: List[Segment]):
             "backgroundColor": "rgba(255, 255, 255, 0.0)",
         }
     }
+async def get_brand_summary() -> str:
+    response = (
+        supabase.table("brand_profiles")
+        .select("what_brand_does, who_are_customers, what_customers_like")
+        .eq("id", 1)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Brand profile not found.")
+
+    profile = response.data[0]
+    return (f"{profile.get('what_brand_does', '').strip()} | "
+    f"{profile.get('who_are_customers', '').strip()} | "
+    f"{profile.get('what_customers_like', '').strip()}"
+    )
+
+# replace the entire generate_meme_endpoint with this:
+@app.post("/generate-meme")
+async def generate_meme_endpoint(
+    topic_prompt: str = Form(...),
+    image_file: Optional[UploadFile] = File(None),
+):
+    try:
+        brand_summary = await get_brand_summary()
+        image_bytes = None
+
+        if image_file and image_file.filename:
+            raw = await image_file.read()
+            if not raw:
+                raise HTTPException(status_code=400, detail="Empty image file.")
+            try:
+                img = Image.open(io.BytesIO(raw)).convert("RGB")
+                buf = io.BytesIO()
+                img.save(buf, format="PNG")
+                image_bytes = buf.getvalue()
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Invalid image: {str(e)}")
+
+        return await generate_meme(
+            topic_prompt=topic_prompt,
+            brand_summary=brand_summary,
+            image_bytes=image_bytes,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Meme generation failed: {str(e)}")
 
 
 app.include_router(brand_agent_router.router, prefix="/api/brand-agent")

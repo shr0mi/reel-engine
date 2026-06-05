@@ -7,3 +7,10 @@ pydantic-ai
 supabase
 dotenv
 edge-tts
+#mister-meme install
+pillow
+scikit-learn
+scipy
+numpy
+sentence-transformers
+google-generativeai
