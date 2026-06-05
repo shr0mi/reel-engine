@@ -81,27 +81,10 @@ class FetchVideosRequest(BaseModel):
     story_blocks: list[StoryBlockTiming]
 
 class FetchVideosOutput(StoryBlockTiming):
-    videos: List[Any]
+    videos_per_prompt: List[List[Any]]
 
 class FetchVideosResponse(BaseModel):
     story_blocks: List[FetchVideosOutput]
-
-# Helper function for interleaving search results
-def interleave_videos(results_by_term: List[List[Any]]) -> List[Any]:
-    """
-    Interleaves lists round-robin style:
-    [1st of term1, 1st of term2, ..., 2nd of term1, 2nd of term2, ...]
-    """
-    interleaved = []
-    # Find the maximum number of items returned by any single term search
-    max_len = max((len(res) for res in results_by_term), default=0)
-    
-    for i in range(max_len):
-        for res_list in results_by_term:
-            if i < len(res_list):
-                interleaved.append(res_list[i])
-                
-    return interleaved
 
 @router.post("/fetch-videos", response_model=FetchVideosResponse)
 def process_story_blocks(payload: FetchVideosRequest):
@@ -115,16 +98,13 @@ def process_story_blocks(payload: FetchVideosRequest):
             videos = fetch_pexels_videos(term, per_page=10)
             results_by_term.append(videos)
         
-        # 2. Interleave the fetched videos round-robin style
-        interleaved_videos = interleave_videos(results_by_term)
-        
         # 3. Construct the output block with the new field
         output_block = FetchVideosOutput(
             paragraph_id=block.paragraph_id,
             start=block.start,
             end=block.end,
             visual_prompt=block.visual_prompt,
-            videos=interleaved_videos
+            videos_per_prompt=results_by_term
         )
         output_blocks.append(output_block)
 
