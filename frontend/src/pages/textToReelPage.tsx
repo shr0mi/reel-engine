@@ -168,7 +168,7 @@ export default function TextToReelPage() {
         {
         id: 'mister-memer',
         name: 'Mister_Memer',
-        slug: '/',
+        slug: '/mister-memer/generate',
         description: 'Keep your feed active with brand-safe, hyper-relevant meme content.',
         points: [
             'Audience tone and engagement style matching',
