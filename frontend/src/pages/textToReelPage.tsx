@@ -754,7 +754,6 @@ export default function TextToReelPage() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
                                         value={prompt}
                                         onChange={(e) => handleVisualPromptChange(blockIndex, promptIndex, e.target.value)}
-                                        required
                                     />
                                     ))}
                                 </div>

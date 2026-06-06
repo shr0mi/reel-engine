@@ -1,6 +1,12 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, Sequence } from 'remotion';
 import { Video, Audio } from '@remotion/media';
+import educationalAudio from '@/assets/educational_audio.mp3';
+import emotionalAudio from '@/assets/emotional_audio.mp3';
+import energeticAudio from '@/assets/energetic_audio.mp3';
+import peacefulAudio from '@/assets/peaceful_audio.mp3';
+import funnyAudio from '@/assets/funny_audio.mp3';
+import inspirationalAudio from '@/assets/inspirational_audio.mp3';
 
 // ==========================================
 // TypeScript Interfaces
@@ -50,6 +56,16 @@ export interface TextToReelCompositionProps {
   audioOutput: AudioOutput;
 }
 
+// Map lookups linking tone string keys directly to imported modules
+const bgmMapping: Record<AudioOutput['tone'], string> = {
+  educational: educationalAudio,
+  emotional: emotionalAudio,
+  energetic: energeticAudio,
+  peaceful: peacefulAudio,
+  funny: funnyAudio,
+  inspirational: inspirationalAudio,
+};
+
 // Global uniform layout adjustment dictionary
 const globalCaptionStyle = {
   fontFamily: 'Impact, Arial Black, sans-serif',
@@ -66,6 +82,9 @@ export const TextToReelComposition: React.FC<TextToReelCompositionProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTime = frame / fps;
+
+  // 2. Select the matching background track based on incoming payload data
+  const backgroundMusicSource = bgmMapping[audioOutput.tone] || inspirationalAudio;
 
   // 1. Locate the active text subtitle segment block
   const activeCaption = audioOutput.captions?.find(
@@ -100,6 +119,15 @@ export const TextToReelComposition: React.FC<TextToReelCompositionProps> = ({
       {/* LAYER 1: Master Audio Track */}
       {audioOutput.audio_url && (
         <Audio src={audioOutput.audio_url} volume={1.0} />
+      )}
+
+      {/* LAYER 1b: Continuous Background Ambience Loop (40% Volume) */}
+      {backgroundMusicSource && (
+        <Audio 
+          src={backgroundMusicSource} 
+          volume={0.4} 
+          loop 
+        />
       )}
 
       {/* LAYER 2: Video Asset Timeline Sequences */}
