@@ -182,7 +182,7 @@ export default function TextToReelPage() {
     const [scriptInput, setScriptInput] = useState<ScriptInput>({
         prompt: '',
         language: 'en',
-        duration: 40,
+        duration: 60,
     });
     const [scriptOutput, setScriptOutput] = useState<ScriptOutput | null>(null);
     const [isScriptLoading, setIsScriptLoading] = useState<boolean>(false);
@@ -405,7 +405,21 @@ export default function TextToReelPage() {
         }
 
         const data: VideoOutput = await response.json();
-        setVideoOutput(data);
+        // Modify the timing of paragrpahs so that there are no gaps
+        const adjustedStoryBlocks = data.story_blocks.map((block, index) => {
+            // Rule 1: The first block should always start at 0
+            // Rule 2: Each subsequent block should start exactly when the previous one ends
+            if(index === 0){
+                return { ...block, start: 0};
+            }else{
+                return { ...block, start: data.story_blocks[index - 1].end};
+            }
+        });
+
+        setVideoOutput({
+            ...data,
+            story_blocks: adjustedStoryBlocks
+        });
         setIsFinalSectionVisible(true);
         } catch (err: any) {
         setVideoError(err.message || 'An unexpected error occurred while fetching videos.');
