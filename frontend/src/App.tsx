@@ -9,6 +9,7 @@ import RenderPage from "@/pages/RenderPage"
 import HomePage from "@/pages/HomePage"
 import BrandAgentPage from './pages/BrandAgentPage'
 import TextToReelPage from './pages/textToReelPage'
+import TextToReelRenderPage from './pages/textToReelRenderPage'
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/cool-captions/render" element={<RenderPage />} />
 
             <Route path="/text-to-reel" element={<TextToReelPage />} />
+            <Route path="/text-to-reel/render" element={<TextToReelRenderPage />} />
           
 
         </Routes>

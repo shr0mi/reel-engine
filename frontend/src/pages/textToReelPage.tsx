@@ -16,6 +16,7 @@ import {
   Save
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 interface Feature {
   id: string;
@@ -123,6 +124,8 @@ interface ParagraphSlotConfig {
 }
 
 export default function TextToReelPage() {
+    const navigate = useNavigate();
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const features: Feature[] = [
@@ -494,6 +497,15 @@ export default function TextToReelPage() {
         });
 
         setFinalVideoState(compiledState);
+
+        // 2. WRITE THE NAVIGATION HERE 
+        // Pass 'compiledState' directly instead of 'finalVideoState'
+        navigate("/text-to-reel/render", { 
+            state: { 
+            finalVideoState: compiledState, 
+            audioOutput 
+            } 
+        });
     };
 
 
