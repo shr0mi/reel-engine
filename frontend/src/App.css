@@ -1,8 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@100..800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
-@import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@100..800&display=swap');
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,6 +12,8 @@
   --font-impact: "Impact", "Haettenschweiler", "Arial Black", sans-serif;
   --font-comic: "Comic Sans MS", "Comic Sans", cursive;
   --font-helvetica: "Helvetica Neue", "Helvetica", Arial, sans-serif;
+  /* Optional: Add your new font here to use it as a Tailwind utility class (e.g., font-anek) */
+  --font-anek: "Anek Bangla", sans-serif;
 }
 
 @theme inline {
