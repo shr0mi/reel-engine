@@ -329,16 +329,17 @@ export default function TextToReelPage() {
         e.preventDefault();
         if (!scriptOutput) return;
 
+        console.log(scriptOutput);
         setIsAudioLoading(true);
         setAudioError(null);
 
         setIsVideoSectionVisible(false);
         setIsFinalSectionVisible(false);
 
-        console.log(scriptOutput);
+        //console.log(scriptOutput);
 
         try {
-        const response = await fetch('http://127.0.0.1:8000/api/text-to-reel/generate-audio', {
+        const response = await fetch(`http://127.0.0.1:8000/api/text-to-reel/generate-audio?language=${scriptInput.language}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(scriptOutput),

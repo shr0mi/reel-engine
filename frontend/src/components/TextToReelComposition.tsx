@@ -68,7 +68,7 @@ const bgmMapping: Record<AudioOutput['tone'], string> = {
 
 // Global uniform layout adjustment dictionary
 const globalCaptionStyle = {
-  fontFamily: 'Impact, Arial Black, sans-serif',
+  fontFamily: 'Impact, Arial Black, sans-serif, Anek Bangla',
   fontSize: 76,
   primaryColor: '#FFFF00', // Neon yellow for high hackathon readability
   outlineColor: '#000000',
