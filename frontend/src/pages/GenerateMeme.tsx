@@ -309,7 +309,7 @@ export default function GenerateMeme() {
 
                             {/* Meme with overlay text */}
                             <div className="flex justify-center bg-slate-50 rounded-lg p-4">
-                                <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
+                                <div style={{ position: "relative", display: "inline-block", maxWidth: "100%", minWidth: "600px" }}>
                                     <img
                                         src={displayImageSrc}
                                         alt="Generated Meme"
@@ -317,6 +317,7 @@ export default function GenerateMeme() {
                                         style={{
                                             display: "block",
                                             maxWidth: "100%",
+                                            minWidth: "600px",
                                             maxHeight: "500px",
                                             borderRadius: "4px",
                                         }}

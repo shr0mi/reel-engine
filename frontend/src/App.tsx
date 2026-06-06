@@ -10,6 +10,7 @@ import HomePage from "@/pages/HomePage"
 import BrandAgentPage from './pages/BrandAgentPage'
 import TextToReelPage from './pages/textToReelPage'
 import GenerateMeme from "@/pages/GenerateMeme"
+import TextToReelRenderPage from './pages/textToReelRenderPage'
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
 
             <Route path="/text-to-reel" element={<TextToReelPage />} />
             <Route path="/mister-memer/generate" element={<GenerateMeme />} />
+            <Route path="/text-to-reel/render" element={<TextToReelRenderPage />} />
 
         </Routes>
       </main>
