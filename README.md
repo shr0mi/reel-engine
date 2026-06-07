@@ -25,11 +25,12 @@ https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 - Supports two languages: Bangla and English
 - Uses EdgeTTS to generate to generate the audio file
 - Gives user the ability to edit script, visual prompts
+- Fetches Videos from Pexels API based on the visual prompts
 - Automatically selects background music based on tone
 
 | Example Output(English) | Example Output(Bangla) |
 | :--- | :--- |
-| | |
+|<video src="https://github.com/user-attachments/assets/d7e4c00c-f3c3-4b4c-8bd2-a70bbd2eb7e0" width="100%" controls></video> |<video src="https://github.com/user-attachments/assets/c452c010-79bf-43d0-943d-75065c1e6bdc" width="100%" controls></video> |
 
 
 
