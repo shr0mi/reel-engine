@@ -1,12 +1,12 @@
 import os
 import json
-import numpy as np
 from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from sentence_transformers import SentenceTransformer
+from google import genai
+from google.genai import types
 from pydantic_ai import Agent
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
@@ -17,39 +17,50 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 if not GEMINI_API_KEY:
     raise ValueError("Missing GEMINI_API_KEY")
 
+# Initialize the new SDK client for embedding retrieval tasks
+genai_client = genai.Client(api_key=GEMINI_API_KEY)
+
 # ====================== MEME DB + EMBEDDINGS ======================
 
-CACHE_PATH = "template_embeddings.npy"
+CACHE_PATH = "template_embeddings.json"
 
 with open("memedb.json") as f:
     MEME_DB = json.load(f)
 
-# We always initialize the model because we need it to encode the incoming user queries
-_embedder = SentenceTransformer("all-MiniLM-L6-v2")
+if not os.path.exists(CACHE_PATH):
+    raise FileNotFoundError(f"CRITICAL: Pre-computed cache missing at {CACHE_PATH}. Run generate_embeddings.py locally first.")
 
-# Optimized Local Caching Logic
-if os.path.exists(CACHE_PATH):
-    print(f" -> Loading pre-computed embeddings from {CACHE_PATH}...")
-    _template_embeddings = np.load(CACHE_PATH)
-else:
-    print(" -> No cache found. Encoding meme database templates (CPU intensive)...")
-    _template_strings = [f"{m['vibe']} {m.get('ex_bottom', '')}" for m in MEME_DB]
-    _template_embeddings = _embedder.encode(_template_strings, normalize_embeddings=True)
-    
-    # Save to disk so next startup/worker reload is instantaneous
-    np.save(CACHE_PATH, _template_embeddings)
-    print(f" -> Saved embeddings cache to {CACHE_PATH} successfully!")
+print(f" -> Loading pre-computed Gemini embeddings from {CACHE_PATH}...")
+with open(CACHE_PATH) as f:
+    _template_embeddings = json.load(f)
 
 
 def _template_summary(m: dict) -> str:
-    # Absolute minimum: id | vibe | structure rule | example top > bottom
     return f"{m['id']}|{m['vibe']}|{m.get('structure','')}|{m.get('ex_top','')}>{m.get('ex_bottom','')}"
 
 
+def pure_python_dot_product(v1: list[float], v2: list[float]) -> float:
+    return sum(x * y for x, y in zip(v1, v2))
+
+
 def retrieve_top_templates(query: str, top_k: int = 3) -> list[dict]:
-    q = _embedder.encode([query], normalize_embeddings=True)
-    scores = np.dot(_template_embeddings, q.T).flatten()
-    return [MEME_DB[i] for i in np.argsort(scores)[::-1][:top_k]]
+    # Match model identifier and dimensionality to the document cache
+    response = genai_client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=query,
+        config=types.EmbedContentConfig(
+            task_type="RETRIEVAL_QUERY",
+            output_dimensionality=768
+        )
+    )
+    q_emb = response.embeddings[0].values
+    
+    # Calculate similarities using pure Python
+    scores = [pure_python_dot_product(tmpl_emb, q_emb) for tmpl_emb in _template_embeddings]
+    
+    # Sort and pick top_k
+    ranked_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+    return [MEME_DB[i] for i in ranked_indices[:top_k]]
 
 
 # ====================== SCHEMA ======================
@@ -65,8 +76,6 @@ class MemeOutput(BaseModel):
 memer_agent = Agent(
     model=GoogleModel("gemini-2.5-flash", provider=GoogleProvider(api_key=GEMINI_API_KEY)),
     output_type=MemeOutput,
-    
-    # ~120 token system prompt — every word earns its place
     instructions=(
         """You are a highly creative and witty Meme caption engine tailored for a Bangladeshi audience. 
 Avoid being overly rigid or literal—make the memes funny, highly relatable, culturally accurate, and deeply tied to the nuances of the topic prompt.
@@ -80,10 +89,6 @@ EXAMPLES OF EXPECTED CREATIVITY & STYLE:
 - Topic: About when you get to buy a brand new phone with your own money after using your fathers second hand phone for years and your are feeling so happy and delighted
   Top: Finally got my own phone after abbu's old one
   Bottom: Choto Bhai/Bon: "aita amader phone"
-
-- Topic: When you send a 1 poisa wish note in bkash instead of calling to save money.
-  Top: You don't need to spend phone balance to sending Eid wishes to every one
-  Bottom: If you spend 1 paisa with an Eid Mubarak note in Bkash
 
 Output ONLY valid JSON matching the schema format: {template_id: int, top_text: str, bottom_text: str}"""
     ),
@@ -102,21 +107,15 @@ async def generate_meme(
     is_image_mode = image_bytes is not None
 
     if is_image_mode:
-        # ~30 tokens of user prompt
         prompt = f"IMG|AUD:{brand_summary}|TOPIC:{topic_prompt}"
     else:
         top_templates = retrieve_top_templates(topic_prompt, top_k=3)
-        # Each template summary ~25 tokens; 3 = ~75 tokens total
         tmpl_block = "\n".join(_template_summary(t) for t in top_templates)
         prompt = f"TMPL|AUD:{brand_summary}|TOPIC:{topic_prompt}\n{tmpl_block}"
 
-    print(prompt)
-    print("Chars:", len(prompt))
-    print("Words:", len(prompt.split()))
     print("MEME AGENT START")
     result = await memer_agent.run(prompt)
     print("MEME AGENT END")
-    print(result.usage())
     meme = result.output
 
     if is_image_mode:
