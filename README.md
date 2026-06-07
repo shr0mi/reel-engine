@@ -19,6 +19,20 @@ The platform will support four content modes:
 
 https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 
+**Text2Reel**
+- Uses PydanticAI and Gemini API to generate script, tone, visual prompts
+- Uses Brand Consistency Agent to find all necessary details about the brand
+- Supports two languages: Bangla and English
+- Uses EdgeTTS to generate to generate the audio file
+- Gives user the ability to edit script, visual prompts
+- Automatically selects background music based on tone
+
+| Example Output(English) | Example Output(Bangla) |
+| :--- | :--- |
+| | |
+
+
+
 **Mister_Memer:**
 - Uses custom curated list of meme templates
 - Uses meme template description to find appropiate template
