@@ -58,7 +58,7 @@ export default function TextToReelRender() {
   // Safe validation check ensuring assets exist before processing
   if (!finalVideoState || !audioOutput) {
     return (
-      <div className="p-6 text-center h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="p-6 text-center  min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <p className="text-red-500 mb-4 font-medium">No video or audio timeline configurations found.</p>
         <button
           onClick={() => navigate("/text-to-reel")}

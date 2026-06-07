@@ -33,6 +33,7 @@ interface BrandDetails{
     contentPreferences: string;
 }
 
+
 export default function BrandAgentPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -122,7 +123,7 @@ export default function BrandAgentPage() {
         fetchBrandDetails();
     }, []);
 
-
+    
     const handleGenerate = async () => {
         if (!prompt.trim()) {
         alert("Please enter a brand prompt first.");
