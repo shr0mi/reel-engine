@@ -151,27 +151,29 @@ async def upload_to_supabase(file: UploadFile) -> str:
         )
 
 
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from typing import List
+
 @router.post("/api/upload-ads-images", response_model=ImageUploadResponse)
-async def upload_ads_images(
-    image1: UploadFile = File(...),
-    image2: UploadFile = File(...),
-    image3: UploadFile = File(...),
-    image4: UploadFile = File(...),
-    image5: UploadFile = File(...),
-):
+async def upload_ads_images(files: List[UploadFile] = File(...)):
     """
-    Accepts 5 files directly from the client and passes them through to Supabase.
+    Accepts a dynamic list of files (up to 5) under the key 'files'
     """
-    url1 = await upload_to_supabase(image1)
-    url2 = await upload_to_supabase(image2)
-    url3 = await upload_to_supabase(image3)
-    url4 = await upload_to_supabase(image4)
-    url5 = await upload_to_supabase(image5)
-    
+    if len(files) > 5:
+        raise HTTPException(status_code=400, detail="You can upload a maximum of 5 images.")
+
+    # Upload only the files that were actually sent
+    urls = []
+    for file in files:
+        url = await upload_to_supabase(file)
+        urls.append(url)
+
+    # Construct the payload dynamically. Fill remaining fields with empty strings or None 
+    # if the user uploaded fewer than 5 images.
     return {
-        "image1_url": url1,
-        "image2_url": url2,
-        "image3_url": url3,
-        "image4_url": url4,
-        "image5_url": url5
+        "image1_url": urls[0] if len(urls) > 0 else "",
+        "image2_url": urls[1] if len(urls) > 1 else "",
+        "image3_url": urls[2] if len(urls) > 2 else "",
+        "image4_url": urls[3] if len(urls) > 3 else "",
+        "image5_url": urls[4] if len(urls) > 4 else "",
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { 
   Menu, 
   X, 
@@ -43,7 +43,16 @@ interface AudioGenResponse {
   caption: CaptionItem[];
 }
 
+interface UploadedImagesResponse {
+  image1_url: string;
+  image2_url: string;
+  image3_url: string;
+  image4_url: string;
+  image5_url: string;
+}
+
 export default function ProductAdsPhonkPage() {
+  const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const features: Feature[] = [
@@ -119,6 +128,11 @@ export default function ProductAdsPhonkPage() {
   const [audioGenError, setAudioGenError] = useState<string | null>(null);
   const [audioGenData, setAudioGenData] = useState<AudioGenResponse | null>(null);
   const [showFinalAudioSection, setShowFinalAudioSection] = useState<boolean>(false);
+  // Section 4 Image Upload States
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImagesResponse | null>(null);
 
   // Handler for Card 1 (GET Request)
   const handleFetchAudio = async () => {
@@ -203,6 +217,67 @@ export default function ProductAdsPhonkPage() {
       setIsAudioGenLoading(false);
     }
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files) return;
+  
+  const filesArray = Array.from(e.target.files);
+  
+  if (filesArray.length > 5) {
+    setUploadError("You can upload a maximum of 5 images.");
+    setSelectedFiles([]);
+    return;
+  }
+  
+  setUploadError(null);
+  setSelectedFiles(filesArray);
+};
+
+const handleGenerateAdvertisement = async () => {
+  if (selectedFiles.length === 0) {
+    setUploadError("Please upload at least one image before generating the advertisement.");
+    return;
+  }
+
+  setIsUploading(true);
+  setUploadError(null);
+
+  const formData = new FormData();
+  selectedFiles.forEach((file) => {
+    formData.append("files", file); // Adjust the key string ("files") if your backend expects a specific field name
+  });
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/product-ads/api/upload-ads-images', {
+      method: 'POST',
+      body: formData, 
+      // Note: Do NOT manually set the 'Content-Type' header here. 
+      // The browser automatically sets it to multipart/form-data with the correct boundary string.
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status: ${response.status}. Upload failed.`);
+    }
+
+    const data: UploadedImagesResponse = await response.json();
+    setUploadedImages(data);
+
+    // Go to render page
+    // Redirect to render page passing all accumulated states
+    navigate('/product-ads/phonk-style/render', {
+      state: {
+        audioData: audioData,        // From Card 1 (GET)
+        audioGenData: audioGenData,  // From Card 3 (POST)
+        uploadedImages: data         // From Card 4 (POST)
+      }
+    });
+
+  } catch (err: any) {
+    setUploadError(err.message || 'An error occurred while uploading the advertisement images.');
+  } finally {
+    setIsUploading(false);
+  }
+};
 
     return (
         <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
@@ -413,11 +488,11 @@ export default function ProductAdsPhonkPage() {
                   </div>
                 </div>
 
-                {/* Card 4: Final Audio Section */}
+                {/* Card 4: Final Audio & Image Upload Section */}
                 <div 
                   className={`w-full max-w-xl transition-all duration-500 ease-in-out transform ${
                     showFinalAudioSection 
-                      ? 'opacity-100 translate-y-0 max-h-[400px]' 
+                      ? 'opacity-100 translate-y-0 max-h-[600px]' 
                       : 'opacity-0 -translate-y-4 max-h-0 overflow-hidden pointer-events-none'
                   }`}
                 >
@@ -427,19 +502,51 @@ export default function ProductAdsPhonkPage() {
                         <label className="block text-sm font-semibold text-black">
                           Generated Speech Audio
                         </label>
-                        <audio 
-                          src={audioGenData.tts_audio_url} 
-                          controls 
-                          className="w-full rounded-xl bg-white" 
-                        />
+                        <audio src={audioGenData.tts_audio_url} controls className="w-full rounded-xl bg-white" />
                       </div>
                     )}
 
+                    {/* File Upload Field */}
+                    <div className="space-y-2">
+                      <label htmlFor="image-upload" className="block text-sm font-semibold text-black">
+                        Upload Advertisement Images (Max 5)
+                      </label>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        multiple
+                        accept=".png, .jpg, .jpeg"
+                        onChange={handleFileChange}
+                        className="w-full bg-white border border-gray-300 text-black py-2 px-3 rounded-xl file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-neutral-800 text-sm"
+                      />
+                      {selectedFiles.length > 0 && (
+                        <p className="text-xs text-neutral-500 mt-1">
+                          {selectedFiles.length} {selectedFiles.length === 1 ? 'image' : 'images'} selected.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Section Specific Error Notification */}
+                    {uploadError && (
+                      <div className="p-4 bg-red-50 border-2 border-red-500 rounded-xl text-red-700 text-sm font-medium">
+                        {uploadError}
+                      </div>
+                    )}
+
+                    {/* Update Action Trigger Button */}
                     <button
-                      onClick={() => {}} // Static action placeholder
-                      className="w-full bg-black hover:bg-neutral-800 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+                      onClick={handleGenerateAdvertisement}
+                      disabled={isUploading}
+                      className="w-full bg-black hover:bg-neutral-800 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center transition-colors disabled:bg-neutral-400"
                     >
-                      Generate Advertisement
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading Images...
+                        </>
+                      ) : (
+                        'Generate Advertisement'
+                      )}
                     </button>
                   </div>
                 </div>

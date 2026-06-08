@@ -13,6 +13,7 @@ import GenerateMeme from "@/pages/GenerateMeme"
 import TextToReelRenderPage from './pages/textToReelRenderPage'
 import ProductAdsSelectionPage from './pages/ProductAdsSelectionPage'
 import ProductAdsPhonkPage from './pages/ProductAdsPhonkPage'
+import ProductAdsPhonkRenderPage from './pages/ProductAdsPhonkRenderPage'
 
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
 
             <Route path="/product-ads" element={<ProductAdsSelectionPage />} />
             <Route path="/product-ads/phonk-style" element={<ProductAdsPhonkPage />} />
+            <Route path="/product-ads/phonk-style/render" element={<ProductAdsPhonkRenderPage />} />
+            
 
         </Routes>
       </main>
