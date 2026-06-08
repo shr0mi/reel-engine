@@ -51,7 +51,7 @@ export default function HomePage() {
     {
       id: 'product-ads',
       name: 'ProductAds',
-      slug: '/',
+      slug: '/product-ads',
       description: 'Turn static product media into high-conversion promotional assets.',
       points: [
         'Instant motion graphics and smooth transitions',

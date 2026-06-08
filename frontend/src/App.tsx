@@ -11,6 +11,8 @@ import BrandAgentPage from './pages/BrandAgentPage'
 import TextToReelPage from './pages/textToReelPage'
 import GenerateMeme from "@/pages/GenerateMeme"
 import TextToReelRenderPage from './pages/textToReelRenderPage'
+import ProductAdsSelectionPage from './pages/ProductAdsSelectionPage'
+import ProductAdsPhonkPage from './pages/ProductAdsPhonkPage'
 
 
 function App() {
@@ -33,6 +35,9 @@ function App() {
             <Route path="/text-to-reel" element={<TextToReelPage />} />
             <Route path="/mister-memer/generate" element={<GenerateMeme />} />
             <Route path="/text-to-reel/render" element={<TextToReelRenderPage />} />
+
+            <Route path="/product-ads" element={<ProductAdsSelectionPage />} />
+            <Route path="/product-ads/phonk-style" element={<ProductAdsPhonkPage />} />
 
         </Routes>
       </main>

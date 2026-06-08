@@ -106,7 +106,7 @@ export default function GenerateMeme() {
     {
         id: "product-ads",
         name: "ProductAds",
-        slug: "/",
+        slug: "/product-ads",
         icon: Megaphone,
     },
     {
