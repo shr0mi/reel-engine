@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from database import supabase
 from productAdsPhonkAgent import generate_climax_script, ScriptResponse, ScriptRequest
 from productAdsPhonkTTS import process_tts_and_upload, AudioRequest, AudioResponse
+from pydantic import BaseModel
+import uuid
+import os
 
 router = APIRouter(
     tags=['product ads']
@@ -105,3 +108,70 @@ async def generate_audio(request: AudioRequest):
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Audio processing workflow failed: {str(e)}")
+    
+IMAGE_BUCKET_NAME = "images"
+
+# Response Schema
+class ImageUploadResponse(BaseModel):
+    image1_url: str
+    image2_url: str
+    image3_url: str
+    image4_url: str
+    image5_url: str
+
+async def upload_to_supabase(file: UploadFile) -> str:
+    """
+    Renames and uploads a single file to Supabase storage without validation.
+    """
+    # Extract the extension simply to keep it in the new filename
+    _, ext = os.path.splitext(file.filename)
+    
+    # Construct the unique filename requested
+    unique_suffix = uuid.uuid4().hex
+    target_filename = f"productAdsPhonkImage_{unique_suffix}{ext}"
+    
+    try:
+        # Read raw stream directly into bytes
+        file_bytes = await file.read()
+        
+        # Upload straight to the storage bucket
+        supabase.storage.from_(IMAGE_BUCKET_NAME).upload(
+            path=target_filename,
+            file=file_bytes,
+            file_options={"content-type": file.content_type}
+        )
+        
+        # Return public CDN link
+        return supabase.storage.from_(IMAGE_BUCKET_NAME).get_public_url(target_filename)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to upload asset '{file.filename}': {str(e)}"
+        )
+
+
+@router.post("/api/upload-ads-images", response_model=ImageUploadResponse)
+async def upload_ads_images(
+    image1: UploadFile = File(...),
+    image2: UploadFile = File(...),
+    image3: UploadFile = File(...),
+    image4: UploadFile = File(...),
+    image5: UploadFile = File(...),
+):
+    """
+    Accepts 5 files directly from the client and passes them through to Supabase.
+    """
+    url1 = await upload_to_supabase(image1)
+    url2 = await upload_to_supabase(image2)
+    url3 = await upload_to_supabase(image3)
+    url4 = await upload_to_supabase(image4)
+    url5 = await upload_to_supabase(image5)
+    
+    return {
+        "image1_url": url1,
+        "image2_url": url2,
+        "image3_url": url3,
+        "image4_url": url4,
+        "image5_url": url5
+    }
