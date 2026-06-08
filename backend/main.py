@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi.staticfiles import StaticFiles
 from misterMemerAgent import generate_meme
 
-from routers import brand_agent_router, text_to_reel_router
+from routers import brand_agent_router, text_to_reel_router, product_ads_router
 
 load_dotenv()
 
@@ -269,3 +269,4 @@ async def generate_meme_endpoint(
 
 app.include_router(brand_agent_router.router, prefix="/api/brand-agent")
 app.include_router(text_to_reel_router.router, prefix="/api/text-to-reel")
+app.include_router(product_ads_router.router, prefix="/api/product-ads")
