@@ -121,6 +121,7 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
               </li>
             ))}
           </ul>
+          
 
           <Link
             to={feature.slug}

@@ -17,10 +17,9 @@ function App() {
 
   return (
     <>
-      {/* <SidebarProvider> */}
-      {/* <AppSidebar /> */}
+      
       <main className="flex flex-col min-h-screen w-full">
-        {/* <SidebarTrigger /> */}
+        
         <Navbar />
         <div className="flex-1">
           <Routes>
@@ -48,7 +47,7 @@ function App() {
         </div>
         <Footer />
       </main>
-      {/* </SidebarProvider> */}
+      
     </>
   );
 }
