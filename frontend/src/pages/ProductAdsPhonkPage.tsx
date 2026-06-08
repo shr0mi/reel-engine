@@ -30,6 +30,19 @@ interface ScriptResponse {
   script: string;
 }
 
+interface CaptionItem {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+}
+
+interface AudioGenResponse {
+  tts_audio_url: string;
+  tts_audio_duration: number;
+  caption: CaptionItem[];
+}
+
 export default function ProductAdsPhonkPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -93,12 +106,19 @@ export default function ProductAdsPhonkPage() {
   
   // Section 2 State (Script Generation)
   const [topicPrompt, setTopicPrompt] = useState<string>('');
+  const [language, setLanguage] = useState<string>('en');
   const [isScriptLoading, setIsScriptLoading] = useState<boolean>(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
   const [showScriptSection, setShowScriptSection] = useState<boolean>(false);
 
   // Section 3 State (Script Editing)
   const [scriptState, setScriptState] = useState<string>('');
+
+  // Section 3 to 4 State (Audio Generation)
+  const [isAudioGenLoading, setIsAudioGenLoading] = useState<boolean>(false);
+  const [audioGenError, setAudioGenError] = useState<string | null>(null);
+  const [audioGenData, setAudioGenData] = useState<AudioGenResponse | null>(null);
+  const [showFinalAudioSection, setShowFinalAudioSection] = useState<boolean>(false);
 
   // Handler for Card 1 (GET Request)
   const handleFetchAudio = async () => {
@@ -122,7 +142,6 @@ export default function ProductAdsPhonkPage() {
     }
   };
 
-  // Handler for Card 2 (POST Request)
   const handleGenerateScript = async () => {
     setIsScriptLoading(true);
     setScriptError(null);
@@ -134,7 +153,8 @@ export default function ProductAdsPhonkPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic_prompt: topicPrompt
+          topic_prompt: topicPrompt,
+          language: language // <-- Add this line to pass the language param
         }),
       });
 
@@ -150,6 +170,37 @@ export default function ProductAdsPhonkPage() {
       setShowScriptSection(false);
     } finally {
       setIsScriptLoading(false);
+    }
+  };
+
+  const handleGenerateAudio = async () => {
+    setIsAudioGenLoading(true);
+    setAudioGenError(null);
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/product-ads/generate-audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          script: scriptState,
+          language: language // Reuses the language state from Card 2
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}. Failed to generate audio.`);
+      }
+
+      const data: AudioGenResponse = await response.json();
+      setAudioGenData(data);
+      setShowFinalAudioSection(true);
+    } catch (err: any) {
+      setAudioGenError(err.message || 'An error occurred while generating speech audio.');
+      setShowFinalAudioSection(false);
+    } finally {
+      setIsAudioGenLoading(false);
     }
   };
 
@@ -279,6 +330,21 @@ export default function ProductAdsPhonkPage() {
                       />
                     </div>
 
+                    <div className="space-y-2">
+                      <label htmlFor="language-select" className="block text-sm font-semibold text-black">
+                        Select Language
+                      </label>
+                      <select
+                        id="language-select"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="w-full bg-white border border-gray-300 text-black py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-black cursor-pointer text-sm"
+                      >
+                        <option value="en">English</option>
+                        <option value="bn">Bangla</option>
+                      </select>
+                    </div>
+
                     {scriptError && (
                       <div className="p-4 bg-red-50 border-2 border-red-500 rounded-xl text-red-700 text-sm font-medium">
                         {scriptError}
@@ -324,11 +390,56 @@ export default function ProductAdsPhonkPage() {
                       />
                     </div>
 
+                    {audioGenError && (
+                      <div className="p-4 bg-red-50 border-2 border-red-500 rounded-xl text-red-700 text-sm font-medium">
+                        {audioGenError}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleGenerateAudio}
+                      disabled={isAudioGenLoading}
+                      className="w-full bg-black hover:bg-neutral-800 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center transition-colors disabled:bg-neutral-400"
+                    >
+                      {isAudioGenLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating Audio...
+                        </>
+                      ) : (
+                        'Generate Audio'
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Card 4: Final Audio Section */}
+                <div 
+                  className={`w-full max-w-xl transition-all duration-500 ease-in-out transform ${
+                    showFinalAudioSection 
+                      ? 'opacity-100 translate-y-0 max-h-[400px]' 
+                      : 'opacity-0 -translate-y-4 max-h-0 overflow-hidden pointer-events-none'
+                  }`}
+                >
+                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
+                    {audioGenData?.tts_audio_url && (
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-black">
+                          Generated Speech Audio
+                        </label>
+                        <audio 
+                          src={audioGenData.tts_audio_url} 
+                          controls 
+                          className="w-full rounded-xl bg-white" 
+                        />
+                      </div>
+                    )}
+
                     <button
                       onClick={() => {}} // Static action placeholder
                       className="w-full bg-black hover:bg-neutral-800 text-white font-medium py-3 px-4 rounded-xl transition-colors"
                     >
-                      Generate Audio
+                      Generate Advertisement
                     </button>
                   </div>
                 </div>

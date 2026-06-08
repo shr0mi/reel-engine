@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from database import supabase
 from productAdsPhonkAgent import generate_climax_script, ScriptResponse, ScriptRequest
+from productAdsPhonkTTS import process_tts_and_upload, AudioRequest, AudioResponse
 
 router = APIRouter(
     tags=['product ads']
@@ -56,9 +57,6 @@ async def get_audio(id: int = Query(1, description="The ID of the audio track to
             detail=f"Cloud storage connection error: {str(e)}"
         )
     
-# ---------------------------------------------------------
-# 4. FastAPI Router Endpoint
-# ---------------------------------------------------------
 @router.post("/generate-script", response_model=ScriptResponse)
 async def create_reel_script(request: ScriptRequest):
     """
@@ -85,7 +83,8 @@ async def create_reel_script(request: ScriptRequest):
         # 2. Invoke the PydanticAI agent execution loop
         script_output = await generate_climax_script(
             brand_details=brand_data,
-            topic_prompt=request.topic_prompt
+            topic_prompt=request.topic_prompt,
+            language=request.language
         )
         return script_output
         
@@ -94,3 +93,15 @@ async def create_reel_script(request: ScriptRequest):
             status_code=500, 
             detail=f"Script generation failed: {str(e)}"
         )
+    
+@router.post("/generate-audio", response_model=AudioResponse)
+async def generate_audio(request: AudioRequest):
+    try:
+        # Pass both script text and language choice to the processor
+        result = await process_tts_and_upload(request.script, request.language)
+        return result
+        
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Audio processing workflow failed: {str(e)}")
