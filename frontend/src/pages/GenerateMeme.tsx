@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Loader2, Download, Image as ImageIcon, RefreshCw } from "lucide-react";
-import { Link } from "react-router";
-import { Menu, X, Captions , Film ,Megaphone,Laugh} from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 interface MemeOutput {
     selected_template: string | null;
@@ -88,34 +87,7 @@ export default function GenerateMeme() {
     const [memeData, setMemeData] = useState<MemeOutput | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const features = [
-    {
-        id: "cool-captions",
-        name: "CoolCaptions",
-        slug: "/cool-captions/transcribe",
-        icon: Captions,
-    },
-    {
-        id: "text-2-reel",
-        name: "Text2Reel",
-        slug: "/text-to-reel",
-        icon: Film,
-    },
-    {
-        id: "product-ads",
-        name: "ProductAds",
-        slug: "/product-ads",
-        icon: Megaphone,
-    },
-    {
-        id: "mister-memer",
-        name: "Mister_Memer",
-        slug: "/mister-memer/generate",
-        icon: Laugh,
-    },
-    ];
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -241,56 +213,7 @@ export default function GenerateMeme() {
     return (
   <div className="min-h-screen bg-white text-slate-900">
 
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-
-        <Link
-          to="/"
-          className="text-xl font-bold tracking-tight text-zinc-900"
-        >
-          AutoReel<span className="text-zinc-500">Engine</span>
-        </Link>
-
-        <nav className="hidden md:flex items-center space-x-8">
-          {features.map((feature) => (
-            <Link
-              key={feature.id}
-              to={feature.slug}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
-            >
-              {feature.name}
-            </Link>
-          ))}
-        </nav>
-
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-zinc-600 hover:text-zinc-900"
-        >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
-        </button>
-
-      </div>
-
-      {isMobileMenuOpen && (
-        <nav className="md:hidden border-b border-zinc-100 bg-white px-4 pt-2 pb-4 space-y-1 shadow-sm">
-          {features.map((feature) => (
-            <Link
-              key={feature.id}
-              to={feature.slug}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-lg text-base font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-            >
-              {feature.name}
-            </Link>
-          ))}
-        </nav>
-      )}
-    </header>
+        <Navbar/>
             
             <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
 

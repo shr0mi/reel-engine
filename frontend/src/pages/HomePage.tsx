@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { 
-  Menu, 
-  X, 
   Captions, 
   Film, 
   Megaphone, 
@@ -10,6 +8,7 @@ import {
   ArrowRight, 
   CheckCircle2 
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 interface Feature {
   id: string;
@@ -21,7 +20,6 @@ interface Feature {
 }
 
 export default function HomePage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const features: Feature[] = [
     {
@@ -78,51 +76,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
       
       {/* 1. FIXED TOPBAR */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold tracking-tight text-zinc-900">
-            AutoReel<span className="text-zinc-500">Engine</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {features.map((feature) => (
-              <Link
-                key={feature.id}
-                to={feature.slug}
-                className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
-              >
-                {feature.name}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-zinc-600 hover:text-zinc-900 focus:outline-none"
-            aria-label="Toggle Menu"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation Dropdown */}
-        {isMobileMenuOpen && (
-          <nav className="md:hidden border-b border-zinc-100 bg-white px-4 pt-2 pb-4 space-y-1 shadow-sm">
-            {features.map((feature) => (
-              <Link
-                key={feature.id}
-                to={feature.slug}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-base font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors"
-              >
-                {feature.name}
-              </Link>
-            ))}
-          </nav>
-        )}
-      </header>
+      <Navbar/>
 
       <main className="pt-16">
         {/* 2. HERO SECTION */}

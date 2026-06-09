@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router";
 import ProductAdsPhonkExportPage from "@/components/ProductAdsPhonkExportPage";
+import Navbar from "@/components/Navbar";
 
 // --- State Interfaces ---
 interface PhonkAudioData {
@@ -44,6 +45,8 @@ export default function ProductAdsPhonkRenderPage() {
   // Fallback UI validation guard if states are empty or direct page access occurs
   if (!audioData || !audioGenData || !uploadedImages) {
     return (
+      <>
+      <Navbar/>
       <main className="pt-16 min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md p-6 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm">
           <p className="text-red-500 font-medium mb-4">
@@ -57,10 +60,13 @@ export default function ProductAdsPhonkRenderPage() {
           </button>
         </div>
       </main>
+      </>
     );
   }
 
   return (
+    <>
+    <Navbar/>
     <main className="pt-16 min-h-screen bg-white">
       <ProductAdsPhonkExportPage 
         audioData={audioData}
@@ -68,5 +74,6 @@ export default function ProductAdsPhonkRenderPage() {
         uploadedImages={uploadedImages}
       />
     </main>
+    </>
   );
 }
