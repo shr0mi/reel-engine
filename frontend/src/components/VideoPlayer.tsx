@@ -169,9 +169,9 @@ useEffect(() => {
         alert("No Caption Data Found");
         return;
       }
-
-      // Navigate to render page with captionData as state
-      navigate("/cool-captions/render", { state: { captionData, emojiData } });
+ 
+      // Navigate to b-roll page with captionData and emojiData as state
+      navigate("/cool-captions/b-roll", { state: { captionData, emojiData } });
 
     }
 

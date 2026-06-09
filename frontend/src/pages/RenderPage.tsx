@@ -30,7 +30,7 @@ export default function RenderPage() {
   const navigate = useNavigate();
 
   const state = location.state || {};
-  const {captionData, emojiData} = state;
+  const {captionData, emojiData, bRollData} = state;
 
   useEffect(() => {
     console.log(captionData?.globalStyles.fontFamily);
@@ -56,7 +56,7 @@ export default function RenderPage() {
 
   return (
     <>
-      <VideoExportPage captionData={captionData} emojiData={emojiData} />
+      <VideoExportPage captionData={captionData} emojiData={emojiData} bRollData={bRollData} />
     </>
   );
 }

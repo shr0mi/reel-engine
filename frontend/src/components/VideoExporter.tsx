@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { renderMediaOnWeb } from '@remotion/web-renderer';
 import { MyVideoComponent } from './MyVideoComponent';
 
+// --- Interfaces ---
 interface CaptionSegment {
   id: number;
   start: number;
@@ -43,7 +44,25 @@ interface EmojiPayload {
   globalStyles: EmojiGlobalStyles;
 }
 
-export default function VideoExportPage({ captionData, emojiData }: { captionData: CaptionPayload; emojiData: EmojiPayload }) {
+interface BRollData {
+  b_roll_id: number;
+  query: string;
+  start: number;
+  end: number;
+  duration: number;
+  url: string;
+  download_link: string;
+  width: number;
+  height: number;
+}
+
+interface VideoExportPageProps {
+  captionData: CaptionPayload;
+  emojiData: EmojiPayload;
+  bRollData: BRollData[];
+}
+
+export default function VideoExportPage({ captionData, emojiData, bRollData }: VideoExportPageProps) {
   //  useEffect(() => {
   //      console.log(captionData);
   //      console.log(captionData.globalStyles)
@@ -71,12 +90,13 @@ export default function VideoExportPage({ captionData, emojiData }: { captionDat
           fps: fps,
           width: 1080,
           height: 1920,
-          // Pass caption data as input props to the composition
           
+          // Pass caption, emoji, and b-roll data as input props to the composition
           defaultProps: {
             globalStyles: captionData.globalStyles,
             segments: captionData.segments,
             emojiData: emojiData,
+            bRollData: bRollData, // Forwarding B-Roll selections here
             // Note: videoUrl is intentionally NOT forwarded —
             // MyVideoComponent always uses the hardcoded localhost URL
           },
@@ -85,6 +105,7 @@ export default function VideoExportPage({ captionData, emojiData }: { captionDat
           globalStyles: captionData.globalStyles,
           segments: captionData.segments,
           emojiData: emojiData,
+          bRollData: bRollData, // Forwarding B-Roll selections here
         },
         container: 'mp4',
         videoCodec: 'h264',

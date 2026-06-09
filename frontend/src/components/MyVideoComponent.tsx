@@ -1,8 +1,9 @@
-import React, {useEffect} from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring } from 'remotion';
+import React, { useEffect } from 'react';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, Sequence } from 'remotion';
 import { Video } from '@remotion/media';
 import '../App.css';
 
+// --- Interfaces ---
 interface CaptionSegment {
   id: number;
   start: number;
@@ -38,13 +39,26 @@ interface EmojiPayload {
   globalStyles: EmojiGlobalStyles;
 }
 
+interface BRollData {
+  b_roll_id: number;
+  query: string;
+  start: number;
+  end: number;
+  duration: number;
+  url: string;
+  download_link: string;
+  width: number;
+  height: number;
+}
+
 export interface MyVideoProps {
   globalStyles: GlobalStyles;
   segments: CaptionSegment[];
   emojiData: EmojiPayload;
+  bRollData: BRollData[];
 }
 
-export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segments, emojiData }) => {
+export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segments, emojiData, bRollData }) => {
   const videoUrl = "http://localhost:8000/api/video";
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -96,10 +110,6 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
     positionY = 75,
   } = globalStyles ?? {};
 
-  useEffect(() => {
-    console.log(fontFamily);
-  }, []);
-
   // Mirror your working HTML5 preview: 4-shadow stroke technique
   const textShadow = `
                 /* 1. Sharp core glow to keep letters crisp */
@@ -117,18 +127,39 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
               `;
 
   useEffect(() => {
-    console.log('Caption data received in MyVideoComponent:', { globalStyles, segments });
-  }, [globalStyles, segments]);
+    console.log('Caption and B-Roll data received in MyVideoComponent:', { globalStyles, segments, bRollData });
+  }, [globalStyles, segments, bRollData]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000000' }}>
-      {/* Layer 1: Background video */}
+      {/* Layer 1: Base background talking-head video - Stretched to fit */}
       <Video
         src={videoUrl}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ width: '100%', height: '100%', objectFit: 'fill' }}
       />
 
-      {/* Layer 2: Caption — absolutely positioned, mirrors the HTML5 preview layout */}
+      {/* Layer 2: Overlaid B-Roll Clips mapped onto the layout sequence timeline - Stretched to fit */}
+      {bRollData?.map((bRoll) => {
+        const fromFrame = Math.round(bRoll.start * fps);
+        // Calculate total runtime in frames based on start/end parameters (ignoring asset duration metadata)
+        const durationInFrames = Math.max(1, Math.round((bRoll.end - bRoll.start) * fps));
+
+        return (
+          <Sequence
+            key={bRoll.b_roll_id}
+            from={fromFrame}
+            durationInFrames={durationInFrames}
+          >
+            <Video
+              src={bRoll.download_link}
+              style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+              muted // Muted so it does not conflict with the primary track's audio mix
+            />
+          </Sequence>
+        );
+      })}
+
+      {/* Layer 3: Captions — absolutely positioned on top of background and B-rolls */}
       {activeSegment && (
         <div className={`${globalStyles.fontFamily ?? "font-impact"}`}
           style={{
@@ -154,11 +185,16 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
         </div>
       )}
 
+      {/* Layer 4: Emojis - Positioned correctly and scaled from center */}
       {activeEmojiSegment && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none select-none transition-all duration-75 rounded-lg px-3 py-1"
+              className="absolute text-center pointer-events-none select-none transition-all duration-75 rounded-lg px-3 py-1"
               style={{
-                top: `${emojiData?.globalStyles.positionY}%`,
+                zIndex: 11,
+                left: '50%', // Define horizontal start point
+                top: `${emojiData?.globalStyles.positionY}%`, // Apply vertical position
+                // Combine horizontal centering AND scale in one transform for clean application
+                transform: `translateX(-50%) scale(${emojiScale})`,
                 fontFamily: globalStyles.fontFamily,
                 fontSize: `${emojiData?.globalStyles.fontSize * 2.7}px`,
                 backgroundColor: emojiData?.globalStyles.backgroundColor,
@@ -167,10 +203,6 @@ export const MyVideoComponent: React.FC<MyVideoProps> = ({ globalStyles, segment
               {activeEmojiSegment.emoji}
             </div>
       )}
-
-      {/* <div style={{ position: 'absolute', top: '75%', left: '50%', color: 'white', zIndex: 10 }}>
-        TEST
-      </div> */}
     </AbsoluteFill>
   );
 };
