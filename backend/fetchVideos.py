@@ -10,7 +10,7 @@ PEXELS_URL = "https://api.pexels.com/videos/search"
 
 def fetch_pexels_videos(query: str, per_page: int = 10) -> list:
     """
-    Fetches top horizontal videos between 5 and 10 seconds long 
+    Fetches top portrait videos between 5 and 10 seconds long 
     for a given query from the Pexels API.
     """
     if not PEXELS_API_KEY:

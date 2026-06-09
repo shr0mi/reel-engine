@@ -1,4 +1,5 @@
 import os
+import asyncio
 import io
 import shutil
 from pathlib import Path
@@ -14,6 +15,8 @@ from faster_whisper import WhisperModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from coolCaptionsAgent import Segment, add_emojis_to_segments
+from coolCaptionsBRollAgent import generate_b_roll_suggestions, BRollResponse
+from fetchVideos import fetch_pexels_videos
 #mister-meme imports
 from PIL import Image
 from fastapi import Form
@@ -216,6 +219,55 @@ async def receive_segments(segments: List[Segment]):
             "backgroundColor": "rgba(255, 255, 255, 0.0)",
         }
     }
+
+@app.post("/cool-captions-broll")
+async def receive_b_roll_segments(segments: List[Segment]):
+    """
+    Takes transcript segments, analyzes them for visual context, 
+    and returns a list of generic Pexels search queries with fixed 5s durations.
+    """
+    try:
+        # Process segments through your coolCaptionsBRollAgent logic
+        b_roll_data = await generate_b_roll_suggestions(segments)
+        
+        # Directly return the formatted B-roll response array
+        return b_roll_data
+
+    except ValueError as val_err:
+        # Handle cases like missing API keys explicitly
+        raise HTTPException(status_code=500, detail=str(val_err))
+        
+    except Exception as e:
+        # Generic error handling for unexpected failures
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    
+@app.post("/cool-captions-broll-results")
+async def receive_b_roll_results(segments: List[Segment]):
+    # 1. This returns the BRollResponse object instance
+    b_roll_response = await generate_b_roll_suggestions(segments)
+    
+    output = []
+    
+    # 2. Loop directly through the nested Pydantic list using .b_rolls
+    for item in b_roll_response.b_rolls:
+        # Fetch the videos using standard dot notation
+        videos = fetch_pexels_videos(item.query)
+        
+        # 3. Construct the output block with the pexels results array injected
+        output.append({
+            "b_roll_id": item.b_roll_id,
+            "query": item.query,
+            "start": item.start,
+            "end": item.end,
+            "results": videos
+        })
+        
+    return output
+
+
+
+# Mister_Memer
+
 async def get_brand_summary() -> str:
     response = (
         supabase.table("brand_profiles")
@@ -232,6 +284,8 @@ async def get_brand_summary() -> str:
     f"{profile.get('who_are_customers', '').strip()} | "
     f"{profile.get('what_customers_like', '').strip()}"
     )
+
+
 
 # replace the entire generate_meme_endpoint with this:
 @app.post("/generate-meme")
