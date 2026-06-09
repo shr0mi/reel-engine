@@ -121,7 +121,7 @@ export const ProductAdsPhonkComposition: React.FC<ProductAdsPhonkCompositionProp
     : 1;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#000000', fontFamily: 'Impact, Arial Black, sans-serif' }}>
+    <AbsoluteFill style={{ backgroundColor: '#000000', fontFamily: 'Impact, Arial Black, sans-serif, Anek Bangla' }}>
       
       {/* ========================================== */}
       {/* AUDIO LAYER                                */}
