@@ -2,9 +2,11 @@ from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from database import supabase
 from productAdsPhonkAgent import generate_climax_script, ScriptResponse, ScriptRequest
 from productAdsPhonkTTS import process_tts_and_upload, AudioRequest, AudioResponse
+from productAdsPhonkGenImageAgent import generate_product_images
 from pydantic import BaseModel
 import uuid
 import os
+import asyncio
 
 router = APIRouter(
     tags=['product ads']
@@ -177,3 +179,64 @@ async def upload_ads_images(files: List[UploadFile] = File(...)):
         "image4_url": urls[3] if len(urls) > 3 else "",
         "image5_url": urls[4] if len(urls) > 4 else "",
     }
+
+# Generate Image endpoint
+# ---------------------------------------------------------------------------
+# Supabase upload helper
+# ---------------------------------------------------------------------------
+ 
+async def _upload_to_supabase(data: bytes) -> str:
+    """Upload raw PNG bytes to Supabase storage and return the public URL."""
+    target_filename = f"productAdsPhonkImage_{uuid.uuid4().hex}.png"
+ 
+    try:
+        supabase.storage.from_(IMAGE_BUCKET_NAME).upload(
+            path=target_filename,
+            file=data,
+            file_options={"content-type": "image/png"},
+        )
+        return supabase.storage.from_(IMAGE_BUCKET_NAME).get_public_url(
+            target_filename
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload generated image: {e}",
+        )
+ 
+# ---------------------------------------------------------------------------
+# Endpoint
+# ---------------------------------------------------------------------------
+ 
+@router.post("/api/generate-product-ads", response_model=ImageUploadResponse)
+async def generate_product_ads(
+    image: UploadFile = File(..., description="Product reference image (jpg/png/webp)"),
+    description: str = File(..., description="Free-text product description"),
+):
+    """
+    Accepts a product image and description, generates 5 AI ad images
+    (1080x1920), uploads them to Supabase, and returns their public URLs.
+    """
+    image_bytes = await image.read()
+    content_type = image.content_type or "image/jpeg"
+ 
+    try:
+        generated_images = await generate_product_images(
+            image_bytes=image_bytes,
+            image_content_type=content_type,
+            description=description,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {e}")
+ 
+    urls: list[str] = await asyncio.gather(
+        *[_upload_to_supabase(img) for img in generated_images]
+    )
+ 
+    return ImageUploadResponse(
+        image1_url=urls[0],
+        image2_url=urls[1],
+        image3_url=urls[2],
+        image4_url=urls[3],
+        image5_url=urls[4],
+    )

@@ -219,7 +219,7 @@ async def receive_segments(segments: List[Segment]):
             "backgroundColor": "rgba(255, 255, 255, 0.0)",
         }
     }
-
+# Deprecated
 @app.post("/cool-captions-broll")
 async def receive_b_roll_segments(segments: List[Segment]):
     """
@@ -240,7 +240,8 @@ async def receive_b_roll_segments(segments: List[Segment]):
     except Exception as e:
         # Generic error handling for unexpected failures
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-    
+
+# Used in frontend    
 @app.post("/cool-captions-broll-results")
 async def receive_b_roll_results(segments: List[Segment]):
     # 1. This returns the BRollResponse object instance
