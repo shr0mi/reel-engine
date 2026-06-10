@@ -16,8 +16,9 @@ The platform will support four content modes:
 - Uses Remotion to add captions with appropiate animations
 - Gives user the ability to change position, font, font-size
 - Adds relevant emoji using an agent created with PydanticAI library and gemini
+- Adds B-Roll footages using Gemini and Pexels API
 
-https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
+https://github.com/user-attachments/assets/0eb57b7a-bd04-4fb1-baa8-4a0c7831e848
 
 **Text2Reel**
 - Uses PydanticAI and Gemini API to generate script, tone, visual prompts
@@ -32,7 +33,14 @@ https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 | :--- | :--- |
 |<video src="https://github.com/user-attachments/assets/d7e4c00c-f3c3-4b4c-8bd2-a70bbd2eb7e0" width="100%" controls></video> |<video src="https://github.com/user-attachments/assets/c452c010-79bf-43d0-943d-75065c1e6bdc" width="100%" controls></video> |
 
+**ProductAds**
+- Generates trending AD reels from templates
+- Current template available: Phonk Style
+- Can generate cool looking product images from a simple photo and a description of the product
 
+| Example Output(English) | Example Output(Bangla) |
+| :--- | :--- |
+|<video src="https://github.com/user-attachments/assets/ed54f795-b381-4c98-8955-61a3f0e3e26a" width="100%" controls></video> |<video src="https://github.com/user-attachments/assets/d7ea4ee0-9d4a-453e-883c-67d4a2f07109" width="100%" controls></video> |
 
 **Mister_Memer:**
 - Uses custom curated list of meme templates
@@ -40,8 +48,9 @@ https://github.com/user-attachments/assets/74cc4df7-0e45-4d66-8e7e-91ebe94d95f0
 - Uses Brand Consistency Agent to let the LLM know the context
 - Capable of creating both random and topic targeted memes 
 
-![Mister Memer Showcase](images/mister_memer_img1.png)
-![Mister Memer Showcase](images/mister_memer_img2.png)
+Topic Prompt: Buying ram early and selling them now for my new pc
+
+<img src="images/mister_memer_img2.png" width="600px">
 
 
 
