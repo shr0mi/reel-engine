@@ -116,12 +116,12 @@ export default function CoolCaptionsBRollPage() {
   // --- Fallback handling ---
   if (!captionData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 text-center">
-        <div className="bg-white p-8 rounded-xl shadow-md max-w-md w-full">
-          <p className="text-red-500 font-medium mb-6">No caption configurations found.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-6 text-center transition-colors duration-300">
+        <div className="bg-card text-card-foreground border border-border p-8 rounded-xl shadow-md max-w-md w-full">
+          <p className="text-destructive font-medium mb-6">No caption configurations found.</p>
           <button
             onClick={() => navigate("/cool-captions/transcribe")}
-            className="w-full px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition duration-200"
+            className="w-full px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow hover:bg-primary/90 transition duration-200"
           >
             Upload Video
           </button>
@@ -171,20 +171,20 @@ export default function CoolCaptionsBRollPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-24 min-h-screen bg-gray-50 px-4 max-w-5xl mx-auto pb-16">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <main className="pt-24 min-h-screen bg-background text-foreground px-4 max-w-5xl mx-auto pb-16 transition-colors duration-300">
+        <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-sm overflow-hidden">
           {/* Header element */}
-          <div className="border-b border-gray-100 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="border-b border-border p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">B-Roll Video Selection</h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <h1 className="text-2xl font-bold">B-Roll Video Selection</h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 Review and cycle through alternative B-Roll context clips matched to your sequence.
               </p>
             </div>
             {!loading && !error && bRollResults.length > 0 && (
               <button
                 onClick={handleDone}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors shadow-sm self-start sm:self-center"
+                className="px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-lg transition-colors shadow-sm self-start sm:self-center"
               >
                 Done
               </button>
@@ -195,17 +195,17 @@ export default function CoolCaptionsBRollPage() {
           <div className="p-6">
             {loading && (
               <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p className="text-gray-500 font-medium animate-pulse">Finding matching context B-Roll clips...</p>
+                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p className="text-muted-foreground font-medium animate-pulse">Finding matching context B-Roll clips...</p>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-xl flex flex-col items-center gap-3">
+              <div className="bg-destructive/10 text-destructive border border-destructive/30 p-4 rounded-xl flex flex-col items-center gap-3">
                 <p className="font-medium">{error}</p>
-                <button 
+                <button
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-white text-red-700 border border-red-300 rounded-lg hover:bg-red-50 text-sm font-medium"
+                  className="px-4 py-2 bg-card text-destructive border border-destructive/30 rounded-lg hover:bg-destructive/10 text-sm font-medium"
                 >
                   Retry Request
                 </button>
@@ -213,7 +213,7 @@ export default function CoolCaptionsBRollPage() {
             )}
 
             {!loading && !error && bRollResults.length === 0 && (
-              <p className="text-gray-500 text-center py-12">No B-Roll suggestions generated for your segments.</p>
+              <p className="text-muted-foreground text-center py-12">No B-Roll suggestions generated for your segments.</p>
             )}
 
             {!loading && !error && bRollResults.length > 0 && (
@@ -224,47 +224,47 @@ export default function CoolCaptionsBRollPage() {
                   const hasVideos = item.results && item.results.length > 0;
 
                   return (
-                    <div 
-                      key={item.b_roll_id} 
-                      className="flex flex-col sm:flex-row sm:items-center justify-between border border-gray-100 bg-gray-50/50 rounded-xl p-5 gap-4 hover:border-gray-200 transition-colors"
+                    <div
+                      key={item.b_roll_id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between border border-border bg-muted/40 rounded-xl p-5 gap-4 hover:border-primary/30 transition-colors"
                     >
                       {/* Query Details */}
                       <div className="space-y-1">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 capitalize">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize">
                           {item.query}
                         </span>
-                        <div className="text-xs text-gray-400">
-                          Timeline: <span className="font-medium text-gray-600">{item.start}s</span> - <span className="font-medium text-gray-600">{item.end}s</span>
+                        <div className="text-xs text-muted-foreground">
+                          Timeline: <span className="font-medium text-foreground">{item.start}s</span> - <span className="font-medium text-foreground">{item.end}s</span>
                         </div>
                       </div>
 
                       {/* Video Reference Link & Loop Control */}
                       {hasVideos && currentVideo ? (
                         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                          <a 
-                            href={currentVideo.url} 
-                            target="_blank" 
+                          <a
+                            href={currentVideo.url}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline truncate max-w-xs sm:max-w-md"
+                            className="text-sm font-medium text-primary hover:underline truncate max-w-xs sm:max-w-md"
                           >
                             View Option #{currentIdx + 1} ({currentVideo.width}x{currentVideo.height})
                           </a>
-                          
+
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                               {currentIdx + 1} / {item.results.length}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleNextVideo(item.b_roll_id, item.results.length)}
-                              className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-md shadow-sm hover:bg-gray-50 transition-colors"
+                              className="px-3 py-1.5 bg-card border border-border text-foreground text-xs font-semibold rounded-md shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                             >
                               Change Video
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400 italic">No alternative video choices found</span>
+                        <span className="text-sm text-muted-foreground italic">No alternative video choices found</span>
                       )}
                     </div>
                   );

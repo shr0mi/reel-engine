@@ -19,7 +19,7 @@ import ProductAdsPhonkRenderPage from './pages/ProductAdsPhonkRenderPage'
 
 function App() {
   const location = useLocation();
-  const hiddenSidebarRoutes = ['/cool-captions/transcribe', '/cool-captions/caption'];
+  const hiddenSidebarRoutes = ['/cool-captions/transcribe', '/cool-captions/caption', '/cool-captions/b-roll'];
   const showSidebar = !hiddenSidebarRoutes.includes(location.pathname);
 
   return (
