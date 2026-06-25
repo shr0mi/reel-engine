@@ -3,3 +3,4 @@
 **/__pycache__/
 backend/stored_videos/
 backend/stored_srt/
+backend/temp-transcribe/

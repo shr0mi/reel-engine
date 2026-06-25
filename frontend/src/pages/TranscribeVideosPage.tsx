@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from 'react-router';
 import { Upload, CheckCircle2, AlertCircle, Loader2, Video } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 export default function TranscribeVideoPage() {
     const navigate = useNavigate();
@@ -64,7 +65,10 @@ export default function TranscribeVideoPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-[80vh] p-4">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
+      <Navbar />
+      <main className="pt-16">
+        <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-4rem)] p-4">
       <div className="w-full max-w-md bg-card text-card-foreground border rounded-xl shadow-sm p-6">
         
         {/* Header */}
@@ -171,6 +175,8 @@ export default function TranscribeVideoPage() {
         )}
 
       </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route, Link } from 'react-router'
+import { Routes, Route, useLocation } from 'react-router'
 import {AppSidebar} from "@/components/MySideBar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import TranscribeVideoPage from "@/pages/TranscribeVideosPage"
@@ -18,13 +18,15 @@ import ProductAdsPhonkRenderPage from './pages/ProductAdsPhonkRenderPage'
 
 
 function App() {
+  const location = useLocation();
+  const showSidebar = location.pathname !== '/cool-captions/transcribe';
 
-  return ( 
+  return (
     <>
       <SidebarProvider>
-      <AppSidebar />
+      {showSidebar && <AppSidebar />}
       <main className="flex-1 w-full min-h-screen">
-        <SidebarTrigger />
+        {showSidebar && <SidebarTrigger />}
         {/* Routes  */}
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -42,7 +44,7 @@ function App() {
             <Route path="/product-ads" element={<ProductAdsSelectionPage />} />
             <Route path="/product-ads/phonk-style" element={<ProductAdsPhonkPage />} />
             <Route path="/product-ads/phonk-style/render" element={<ProductAdsPhonkRenderPage />} />
-            
+
 
         </Routes>
       </main>
