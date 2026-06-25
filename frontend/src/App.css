@@ -132,10 +132,23 @@
   * {
     @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
-    }
   html {
     @apply font-sans;
-    }
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    transition: background-color 400ms ease, color 400ms ease;
+  }
+  /* Smoothly transition theme-aware backgrounds/colors when the .dark class toggles */
+  .bg-background,
+  .bg-secondary,
+  .bg-card,
+  .bg-popover,
+  .text-foreground,
+  .text-muted-foreground,
+  .border-border,
+  .border-input {
+    transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+  }
 }
