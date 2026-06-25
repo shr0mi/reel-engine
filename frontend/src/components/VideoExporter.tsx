@@ -139,28 +139,10 @@ export default function VideoExportPage({ captionData, emojiData, bRollData }: V
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      backgroundColor: '#f3f4f6',
-      color: '#1f2937',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: '#ffffff',
-        padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center',
-        maxWidth: '400px',
-        width: '100%'
-      }}>
-        <h2 style={{ marginBottom: '10px', fontSize: '24px' }}>In-Browser Video Exporter</h2>
-        <p style={{ color: '#6b7280', marginBottom: '30px', fontSize: '14px' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground font-sans px-5 py-5 pt-24 transition-colors duration-300">
+      <div className="bg-card text-card-foreground border border-border p-10 rounded-xl shadow-md text-center max-w-[400px] w-full">
+        <h2 className="mb-2.5 text-2xl font-semibold">In-Browser Video Exporter</h2>
+        <p className="text-muted-foreground mb-7 text-sm">
           Uses Remotion CSR to render and download an MP4 entirely inside your browser.
         </p>
 
@@ -168,33 +150,26 @@ export default function VideoExportPage({ captionData, emojiData, bRollData }: V
         <button
           onClick={handleExport}
           disabled={status === 'rendering'}
-          style={{
-            backgroundColor: status === 'rendering' ? '#9ca3af' : '#2563eb',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            borderRadius: '6px',
-            cursor: status === 'rendering' ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s',
-            width: '100%'
-          }}
+          className={`w-full px-6 py-3 text-base font-semibold rounded-md transition-colors duration-200 ${
+            status === 'rendering'
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'
+          }`}
         >
           {status === 'rendering' ? `Rendering (${progress}%)` : 'Export to MP4'}
         </button>
 
         {/* Status Messaging */}
         {status === 'success' && (
-          <p style={{ color: '#16a34a', marginTop: '15px', fontWeight: '500' }}>
+          <p className="text-primary mt-4 font-medium">
             🎉 Video downloaded successfully!
           </p>
         )}
 
         {status === 'error' && (
-          <div style={{ color: '#dc2626', marginTop: '15px', fontSize: '14px' }}>
-            <p style={{ fontWeight: '500' }}>❌ Render Failed</p>
-            <p style={{ opacity: 0.8 }}>{errorMessage}</p>
+          <div className="text-destructive mt-4 text-sm">
+            <p className="font-medium">❌ Render Failed</p>
+            <p className="opacity-80">{errorMessage}</p>
           </div>
         )}
       </div>

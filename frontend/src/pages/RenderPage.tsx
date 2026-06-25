@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import VideoExportPage from "@/components/VideoExporter";
+import Navbar from "@/components/Navbar";
 
 interface CaptionSegment {
   id: number;
@@ -38,14 +39,19 @@ export default function RenderPage() {
 
   if (!captionData) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-red-500 mb-4">No caption configurations found.</p>
-        <button
-          onClick={() => navigate("/cool-captions/transcribe")}
-          className="px-4 py-2 bg-gray-200 rounded"
-        >
-          Upload Video
-        </button>
+      <div className="min-h-screen w-full bg-background text-foreground transition-colors duration-300">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center pt-24 px-6 text-center">
+          <div className="bg-card text-card-foreground border border-border p-8 rounded-xl shadow-md max-w-md w-full">
+            <p className="text-destructive font-medium mb-6">No caption configurations found.</p>
+            <button
+              onClick={() => navigate("/cool-captions/transcribe")}
+              className="w-full px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow hover:bg-primary/90 transition duration-200"
+            >
+              Upload Video
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -55,8 +61,9 @@ export default function RenderPage() {
   // }, [captionData]);
 
   return (
-    <>
+    <div className="min-h-screen w-full bg-background text-foreground transition-colors duration-300">
+      <Navbar />
       <VideoExportPage captionData={captionData} emojiData={emojiData} bRollData={bRollData} />
-    </>
+    </div>
   );
 }
