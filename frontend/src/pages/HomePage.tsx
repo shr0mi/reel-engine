@@ -124,12 +124,12 @@ export default function HomePage() {
                 Get Started
                 <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
-              <Link
-                to="#features"
+              <a
+                href="#features"
                 className="inline-flex items-center gap-2 border border-border bg-background/50 backdrop-blur-sm px-6 py-3 rounded-full text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
               >
                 See Features
-              </Link>
+              </a>
             </div>
 
             {/* Stats strip */}
@@ -160,7 +160,7 @@ export default function HomePage() {
         {/* 3. FEATURE SECTIONS */}
         <section
           id="features"
-          className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+          className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20"
         >
           {features.map((feature, idx) => {
             const IconComponent = feature.icon;
