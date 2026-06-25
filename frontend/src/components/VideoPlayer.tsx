@@ -161,7 +161,7 @@ useEffect(() => {
     };
 
     if (!captionData) {
-        return <div className="text-sm text-gray-500 animate-pulse">Loading setup assets...</div>;
+        return <div className="text-sm text-muted-foreground animate-pulse">Loading setup assets...</div>;
     }
 
     const handleRender = () => {
@@ -179,7 +179,7 @@ useEffect(() => {
 
     if(isLoading){
       return(
-        <div className="flex flex-col items-center justify-center min-h-[200px] w-full gap-2 text-sm text-gray-500">
+        <div className="flex flex-col items-center justify-center min-h-[200px] w-full gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
           <span className="animate-pulse">{loadingText}</span>
         </div>
@@ -187,7 +187,7 @@ useEffect(() => {
     }
 
     return (
-      <div className="flex gap-[20px]">
+      <div className="flex gap-[20px] mx-auto">
       <div className="max-w-[400px]">
         {/* 
           The parent container MUST be relative. 
@@ -333,8 +333,8 @@ useEffect(() => {
               </CardHeader>
               <CardContent>
                 <Select
-                  // Fallback to 'font-impact' if no font is set yet
-                  value={captionData?.globalStyles.fontFamily ?? "font-impact"}
+                  // Fallback to 'font-sans' (Arial) if no font is set yet
+                  value={captionData?.globalStyles.fontFamily ?? "font-sans"}
                   onValueChange={(newFont) => {
                     setCaptionData((prev) => {
                       if (!prev) return null;
@@ -458,7 +458,7 @@ useEffect(() => {
             </Card>
 
             {/* Go to Next page button */}
-            <Button className="hover:bg-white hover:text-black border-2 border-black"
+            <Button className="border-2 border-border bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={handleRender}
             >
               Render Video
