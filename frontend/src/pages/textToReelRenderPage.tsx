@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import TextToReelVideoExporter from "@/components/textToReelVideoExporter";
+import Navbar from "@/components/Navbar";
 
 // ==========================================
 // TypeScript Interfaces
@@ -58,21 +59,29 @@ export default function TextToReelRender() {
   // Safe validation check ensuring assets exist before processing
   if (!finalVideoState || !audioOutput) {
     return (
-      <div className="p-6 text-center h-screen flex flex-col items-center justify-center bg-gray-50">
-        <p className="text-red-500 mb-4 font-medium">No video or audio timeline configurations found.</p>
-        <button
-          onClick={() => navigate("/text-to-reel")}
-          className="px-4 py-2 bg-neutral-900 text-white font-medium text-sm rounded-lg hover:bg-neutral-800 transition-colors"
-        >
-          Go Back to Builder
-        </button>
+      <div className="min-h-screen w-full bg-background text-foreground transition-colors duration-300">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center pt-24 px-6 text-center">
+          <div className="bg-card text-card-foreground border border-border p-8 rounded-xl shadow-md max-w-md w-full">
+            <p className="text-destructive font-medium mb-6">
+              No video or audio timeline configurations found.
+            </p>
+            <button
+              onClick={() => navigate("/text-to-reel")}
+              className="w-full px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow hover:bg-primary/90 transition duration-200"
+            >
+              Go Back to Builder
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <>
+    <div className="min-h-screen w-full bg-background text-foreground transition-colors duration-300">
+      <Navbar />
       <TextToReelVideoExporter finalVideoState={finalVideoState} audioOutput={audioOutput} />
-    </>
+    </div>
   );
 }

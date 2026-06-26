@@ -115,30 +115,12 @@ export default function TextToReelVideoExporter({ finalVideoState, audioOutput }
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      backgroundColor: '#f3f4f6',
-      color: '#1f2937',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: '#ffffff',
-        padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center',
-        maxWidth: '400px',
-        width: '100%'
-      }}>
-        <h2 style={{ marginBottom: '10px', fontSize: '24px', fontWeight: '600' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen font-sans bg-background text-foreground p-5 transition-colors duration-300">
+      <div className="bg-card text-card-foreground p-10 rounded-xl shadow-md text-center max-w-md w-full border border-border">
+        <h2 className="mb-2.5 text-2xl font-semibold">
           Reel Video Exporter
         </h2>
-        <p style={{ color: '#6b7280', marginBottom: '30px', fontSize: '14px', lineHeight: '1.5' }}>
+        <p className="text-muted-foreground mb-7 text-sm leading-relaxed">
           Compiling your custom timeline assets into a high-definition 1080x1920 video using browser web rendering.
         </p>
 
@@ -146,33 +128,42 @@ export default function TextToReelVideoExporter({ finalVideoState, audioOutput }
         <button
           onClick={handleExport}
           disabled={status === 'rendering'}
-          style={{
-            backgroundColor: status === 'rendering' ? '#9ca3af' : '#0f172a',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            fontSize: '15px',
-            fontWeight: '600',
-            borderRadius: '8px',
-            cursor: status === 'rendering' ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.15s',
-            width: '100%'
-          }}
+          className={`w-full px-6 py-3 text-[15px] font-semibold rounded-lg border-none text-primary-foreground transition-colors duration-150 ${
+            status === 'rendering'
+              ? 'bg-muted cursor-not-allowed'
+              : 'bg-primary hover:bg-primary/90 cursor-pointer'
+          }`}
         >
           {status === 'rendering' ? `Compiling Matrix (${progress}%)` : 'Export MP4 Reel'}
         </button>
 
+        {/* Progress Bar */}
+        {status === 'rendering' && (
+          <div
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="w-full h-2 mt-4 bg-secondary rounded-full overflow-hidden"
+          >
+            <div
+              className="h-full bg-primary transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+
         {/* Status Messaging */}
         {status === 'success' && (
-          <p style={{ color: '#16a34a', marginTop: '20px', fontWeight: '500', fontSize: '14px' }}>
+          <p className="text-emerald-600 dark:text-emerald-400 mt-5 font-medium text-sm">
             🎉 Reel compiled and downloaded successfully!
           </p>
         )}
 
         {status === 'error' && (
-          <div style={{ color: '#dc2626', marginTop: '20px', fontSize: '14px', textAlign: 'left' }}>
-            <p style={{ fontWeight: '600', marginBottom: '4px' }}>❌ Render Execution Halted</p>
-            <p style={{ opacity: 0.8, wordBreak: 'break-word', fontFamily: 'monospace', backgroundColor: '#fef2f2', padding: '8px', borderRadius: '4px' }}>
+          <div className="text-destructive mt-5 text-sm text-left">
+            <p className="font-semibold mb-1">❌ Render Execution Halted</p>
+            <p className="opacity-80 break-words font-mono bg-destructive/10 p-2 rounded">
               {errorMessage}
             </p>
           </div>

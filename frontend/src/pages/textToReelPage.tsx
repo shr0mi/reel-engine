@@ -437,28 +437,28 @@ export default function TextToReelPage() {
 
 
     return(
-        <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-100">
-      
+        <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-accent transition-colors duration-500">
+
             {/* 1. FIXED TOPBAR */}
             <Navbar/>
 
             <main className="pt-16 pb-16 max-w-xl mx-auto">
-                <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 mb-8 text-center">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground mb-8 text-center transition-colors duration-300">
                 Text to Reel
                 </h1>
 
                 {/* First section: Script Generation */}
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+                <div className="bg-card border border-border rounded-xl p-6 shadow-sm transition-colors duration-300">
                 <form onSubmit={handleGenerateScript} className="space-y-5">
                     {/* Prompt Input */}
                     <div>
-                    <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="prompt" className="block text-sm font-medium text-foreground mb-1">
                         Prompt
                     </label>
                     <textarea
                         id="prompt"
                         rows={5}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white shadow-inner focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm resize-none"
+                        className="w-full px-3 py-2 border border-input rounded-lg bg-background shadow-inner focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm resize-none text-foreground placeholder:text-muted-foreground transition-colors duration-300"
                         placeholder="Describe your video idea..."
                         value={scriptInput.prompt}
                         onChange={(e) => setScriptInput({ ...scriptInput, prompt: e.target.value })}
@@ -470,12 +470,12 @@ export default function TextToReelPage() {
                     <div className="grid grid-cols-2 gap-4">
                     {/* Language Select */}
                     <div>
-                        <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="language" className="block text-sm font-medium text-foreground mb-1">
                         Language
                         </label>
                         <select
                         id="language"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
+                        className="w-full px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm text-foreground transition-colors duration-300"
                         value={scriptInput.language}
                         onChange={(e) => setScriptInput({ ...scriptInput, language: e.target.value as 'en' | 'bn' })}
                         >
@@ -486,12 +486,12 @@ export default function TextToReelPage() {
 
                     {/* Duration Select */}
                     <div>
-                        <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="duration" className="block text-sm font-medium text-foreground mb-1">
                         Duration (seconds)
                         </label>
                         <select
                         id="duration"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
+                        className="w-full px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm text-foreground transition-colors duration-300"
                         value={scriptInput.duration}
                         onChange={(e) => setScriptInput({ ...scriptInput, duration: Number(e.target.value) as 40 | 60 | 120 })}
                         >
@@ -506,7 +506,7 @@ export default function TextToReelPage() {
                     <button
                     type="submit"
                     disabled={isScriptLoading}
-                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors duration-150 disabled:bg-neutral-400 flex items-center justify-center gap-2"
+                    className="w-full bg-foreground text-background hover:opacity-90 font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                     {isScriptLoading ? (
                         <>
@@ -521,7 +521,7 @@ export default function TextToReelPage() {
 
                 {/* Inline Error Message */}
                 {scriptError && (
-                    <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
+                    <div className="mt-4 p-3 border border-red-200 bg-red-50 text-red-600 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-400 rounded-lg text-sm font-medium transition-colors duration-300">
                     {scriptError}
                     </div>
                 )}
@@ -536,21 +536,21 @@ export default function TextToReelPage() {
                 }`}
                 >
                 {scriptOutput && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <h2 className="text-lg font-medium text-neutral-900 mb-4">Edit Script Paragraphs</h2>
-                    
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm transition-colors duration-300">
+                    <h2 className="text-lg font-medium text-foreground mb-4">Edit Script Paragraphs</h2>
+
                     <form onSubmit={handleGenerateAudio} className="space-y-4">
                         {/* Dynamic Paragraph Text Areas */}
                         <div className="space-y-4">
                         {scriptOutput.story_blocks.map((block, index) => (
                             <div key={index}>
-                            <label htmlFor={`paragraph-${index}`} className="block text-xs font-medium text-gray-500 mb-1">
+                            <label htmlFor={`paragraph-${index}`} className="block text-xs font-medium text-muted-foreground mb-1">
                                 Paragraph {index + 1}
                             </label>
                             <textarea
                                 id={`paragraph-${index}`}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white shadow-inner focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm resize-none"
+                                className="w-full px-3 py-2 border border-input rounded-lg bg-background shadow-inner focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm resize-none text-foreground transition-colors duration-300"
                                 value={block.spoken_text}
                                 onChange={(e) => handleParagraphChange(index, e.target.value)}
                                 required
@@ -563,7 +563,7 @@ export default function TextToReelPage() {
                         <button
                         type="submit"
                         disabled={isAudioLoading}
-                        className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors duration-150 disabled:bg-neutral-400 flex items-center justify-center gap-2"
+                        className="w-full bg-foreground text-background hover:opacity-90 font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                         {isAudioLoading ? (
                             <>
@@ -578,7 +578,7 @@ export default function TextToReelPage() {
 
                     {/* Audio Error Message */}
                     {audioError && (
-                        <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
+                        <div className="mt-4 p-3 border border-red-200 bg-red-50 text-red-600 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-400 rounded-lg text-sm font-medium transition-colors duration-300">
                         {audioError}
                         </div>
                     )}
@@ -595,45 +595,45 @@ export default function TextToReelPage() {
                 }`}
                 >
                 {audioOutput && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm space-y-6">
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-6 transition-colors duration-300">
                     {/* HTML5 Audio Player */}
                     <div>
-                        <h2 className="text-lg font-medium text-neutral-900 mb-3">Generated Audio</h2>
-                        <audio src={audioOutput.audio_url} controls className="w-full accent-neutral-900" />
+                        <h2 className="text-lg font-medium text-foreground mb-3">Generated Audio</h2>
+                        <audio src={audioOutput.audio_url} controls className="w-full accent-foreground" />
                     </div>
 
                     {/* Visual Prompts Configuration Form */}
                     <form onSubmit={handleFetchVideos} className="space-y-6">
                         <div>
-                        <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                             Configure Visual Prompts
                         </h3>
-                        
+
                         <div className="space-y-5">
                             {audioOutput.story_blocks.map((block, blockIndex) => {
                             // Fetch the static text safely matching the paragraph indexes
                             const staticSpokenText = scriptOutput?.story_blocks[blockIndex]?.spoken_text || '';
 
                             return (
-                                <div key={blockIndex} className="p-4 bg-white border border-gray-200 rounded-lg space-y-3 shadow-inner">
+                                <div key={blockIndex} className="p-4 bg-background border border-border rounded-lg space-y-3 shadow-inner transition-colors duration-300">
                                 <div>
-                                    <span className="text-xs font-bold text-neutral-400 block mb-1">
+                                    <span className="text-xs font-bold text-muted-foreground block mb-1">
                                     PARAGRAPH {blockIndex + 1} TEXT
                                     </span>
-                                    <p className="text-sm text-neutral-700 font-normal leading-relaxed">
+                                    <p className="text-sm text-foreground font-normal leading-relaxed">
                                     {staticSpokenText}
                                     </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <span className="text-xs font-bold text-neutral-400 block">
+                                    <span className="text-xs font-bold text-muted-foreground block">
                                     VISUAL PROMPTS
                                     </span>
                                     {block.visual_prompt.map((prompt, promptIndex) => (
                                     <input
                                         key={promptIndex}
                                         type="text"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 text-sm"
+                                        className="w-full px-3 py-2 border border-input rounded-lg bg-secondary focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-300"
                                         value={prompt}
                                         onChange={(e) => handleVisualPromptChange(blockIndex, promptIndex, e.target.value)}
                                     />
@@ -649,7 +649,7 @@ export default function TextToReelPage() {
                         <button
                         type="submit"
                         disabled={isVideoLoading}
-                        className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors duration-150 disabled:bg-neutral-400 flex items-center justify-center gap-2"
+                        className="w-full bg-foreground text-background hover:opacity-90 font-medium text-sm py-2.5 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                         {isVideoLoading ? (
                             <>
@@ -663,7 +663,7 @@ export default function TextToReelPage() {
                     </form>
 
                     {videoError && (
-                        <div className="mt-4 p-3 border border-red-200 bg-red-50 rounded-lg text-red-600 text-sm font-medium">
+                        <div className="mt-4 p-3 border border-red-200 bg-red-50 text-red-600 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-400 rounded-lg text-sm font-medium transition-colors duration-300">
                         {videoError}
                         </div>
                     )}
@@ -674,14 +674,14 @@ export default function TextToReelPage() {
                 {/* Fourth section: Final Video Generation */}
                 <div className={`transition-all mt-4 duration-500 ease-in-out origin-top ${isFinalSectionVisible ? 'opacity-100 max-h-[4000px] translate-y-0' : 'opacity-0 max-h-0 -translate-y-4 overflow-hidden pointer-events-none'}`}>
                 {videoOutput && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm space-y-6">
-                    <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-                        <h2 className="text-lg font-medium text-neutral-900">Compile Timeline</h2>
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-6 transition-colors duration-300">
+                    <div className="flex items-center justify-between border-b border-border pb-3 transition-colors duration-300">
+                        <h2 className="text-lg font-medium text-foreground">Compile Timeline</h2>
                         <div className="flex items-center gap-2">
-                        <label htmlFor="chunk-dur" className="text-xs font-medium text-gray-500 whitespace-nowrap">Base Duration (s):</label>
+                        <label htmlFor="chunk-dur" className="text-xs font-medium text-muted-foreground whitespace-nowrap">Base Duration (s):</label>
                         <input
                             id="chunk-dur" type="number" min={1} max={20}
-                            className="w-14 px-2 py-1 border border-gray-300 rounded bg-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-neutral-400"
+                            className="w-14 px-2 py-1 border border-input rounded bg-background text-sm text-center text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors duration-300"
                             value={chunkDuration}
                             onChange={(e) => setChunkDuration(Math.max(1, Number(e.target.value)))}
                         />
@@ -692,43 +692,43 @@ export default function TextToReelPage() {
                         <div className="space-y-4">
                         {slotConfigs.map((pConfig, pIdx) => {
                             const originalBlock = videoOutput.story_blocks.find((b) => b.paragraph_id === pConfig.paragraph_id)!;
-                            
+
                             return (
-                            <div key={pConfig.paragraph_id} className="p-4 bg-white border border-gray-200 rounded-lg space-y-3 shadow-inner">
-                                <div className="flex justify-between items-center text-xs font-bold text-neutral-400 border-b border-gray-100 pb-1.5">
+                            <div key={pConfig.paragraph_id} className="p-4 bg-background border border-border rounded-lg space-y-3 shadow-inner transition-colors duration-300">
+                                <div className="flex justify-between items-center text-xs font-bold text-muted-foreground border-b border-border pb-1.5 transition-colors duration-300">
                                 <span>PARAGRAPH {pConfig.paragraph_id} TIMELINE</span>
-                                <span className="font-mono text-neutral-500">{(pConfig.end - pConfig.start).toFixed(1)}s total</span>
+                                <span className="font-mono text-muted-foreground">{(pConfig.end - pConfig.start).toFixed(1)}s total</span>
                                 </div>
 
                                 <div className="space-y-2.5">
                                 {pConfig.slots.map((slot, sIdx) => {
                                     const currentAsset = originalBlock.videos_per_prompt[slot.promptIndex]?.[slot.videoIndex];
-                                    const calculatedStretch = currentAsset && slot.targetDuration > currentAsset.duration 
-                                    ? slot.targetDuration / currentAsset.duration 
+                                    const calculatedStretch = currentAsset && slot.targetDuration > currentAsset.duration
+                                    ? slot.targetDuration / currentAsset.duration
                                     : 1;
 
                                     return (
-                                    <div key={sIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-gray-50 border border-gray-100 rounded-lg text-sm">
+                                    <div key={sIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-secondary border border-border rounded-lg text-sm transition-colors duration-300">
                                         <div className="space-y-0.5 min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-medium text-neutral-900 text-xs">Slot {sIdx + 1} ({slot.targetDuration.toFixed(1)}s)</span>
+                                            <span className="font-medium text-foreground text-xs">Slot {sIdx + 1} ({slot.targetDuration.toFixed(1)}s)</span>
                                             {calculatedStretch > 1 && (
-                                            <span className="bg-amber-50 text-amber-700 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-mono">
+                                            <span className="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50 text-[10px] px-1.5 py-0.5 rounded font-mono">
                                                 Stretch: {calculatedStretch.toFixed(2)}x
                                             </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate font-mono">
-                                            <a href={currentAsset ? currentAsset.url : '#'} target="_blank">
+                                        <p className="text-xs text-muted-foreground truncate font-mono">
+                                            <a href={currentAsset ? currentAsset.url : '#'} target="_blank" className="hover:text-foreground transition-colors duration-200">
                                                 {currentAsset ? currentAsset.url : 'No video available'}
                                             </a>
                                         </p>
                                         </div>
-                                        
+
                                         <button
                                         type="button"
                                         onClick={() => handleCycleVideoSelection(pConfig.paragraph_id, sIdx)}
-                                        className="self-end sm:self-auto bg-white hover:bg-gray-100 border border-gray-200 text-xs font-medium px-2.5 py-1 rounded shadow-sm transition-colors"
+                                        className="self-end sm:self-auto bg-background hover:bg-accent hover:text-accent-foreground border border-input text-xs font-medium px-2.5 py-1 rounded shadow-sm transition-colors duration-200 text-foreground"
                                         >
                                         Change
                                         </button>
@@ -741,7 +741,7 @@ export default function TextToReelPage() {
                         })}
                         </div>
 
-                        <button type="submit" onClick={() => {console.log(finalVideoState)}} className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+                        <button type="submit" onClick={() => {console.log(finalVideoState)}} className="w-full bg-foreground text-background hover:opacity-90 font-medium text-sm py-2.5 rounded-lg transition-all duration-200">
                         Generate Video
                         </button>
                     </form>

@@ -58,6 +58,11 @@ app.mount("/templates", StaticFiles(directory=BASE_DIR / "templates"), name="tem
 TEMP_DIR = "temp-transcribe"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
+# Serve locally-generated text-to-reel voiceovers from the temp-text-to-reel folder.
+TEXT_TO_REEL_DIR = BASE_DIR / "temp-text-to-reel"
+TEXT_TO_REEL_DIR.mkdir(exist_ok=True)
+app.mount("/temp-text-to-reel", StaticFiles(directory=str(TEXT_TO_REEL_DIR)), name="temp-text-to-reel")
+
 MODEL_SIZE = "small"
 print(f"Loading Whisper model ({MODEL_SIZE})...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")

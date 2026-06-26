@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from fetchVideos import fetch_pexels_videos
-from database import supabase
 from pydantic import BaseModel, Field
 from typing import Any, Literal, List
 from reelWriterAgent import generate_reel_script, ScriptResponse
 from text_to_reel_tts import generate_voiceover, ReelDataResponse, StoryBlockTiming
 import os
+import sqlite3
 
 class ScriptRequest(BaseModel):
     prompt: str = Field(default="", description="The specific topic or concept. Leave blank for a random generation.")
@@ -24,21 +24,28 @@ def test():
 @router.post("/generate-script", response_model=ScriptResponse)
 async def create_reel_script(request: ScriptRequest):
     """
-    Fetches brand configuration data from Supabase and hands it over to 
-    the PydanticAI wrapper engine to output a production-ready script.
+    Fetches brand configuration data from the local brand_profile.db SQLite
+    database and hands it over to the PydanticAI wrapper engine to output a
+    production-ready script.
     """
-    # 1. Fetch brand context from Supabase (ID = 1)
-    response = (
-        supabase.table("brand_profiles")
-        .select("*")
-        .eq("id", 1)
-        .execute()
-    )
-    
-    if not response.data:
-        raise HTTPException(status_code=404, detail="Primary brand profile record missing from Supabase.")
-        
-    brand_data = response.data[0]
+    # 1. Fetch brand context from local SQLite (ID = 1)
+    db_path = os.path.join(os.path.dirname(__file__), "..", "brand_profile.db")
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM brand_profiles WHERE id = ?",
+            (1,),
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="Primary brand profile record missing from local DB.")
+
+    brand_data = dict(row)
 
     try:
         # 2. Invoke the PydanticAI execution loop
@@ -49,7 +56,7 @@ async def create_reel_script(request: ScriptRequest):
             duration=request.duration
         )
         return script_output
-        
+
     except Exception as e:
         # Gracefully capture schema mismatches or LLM dropouts
         raise HTTPException(status_code=500, detail=f"Script generation failed: {str(e)}")

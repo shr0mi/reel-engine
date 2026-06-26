@@ -1,8 +1,8 @@
 # text_to_reel.py
+import os
 import re
 import edge_tts
 from reelWriterAgent import ScriptResponse
-from database import supabase
 from pydantic import BaseModel, Field
 from typing import List
 
@@ -27,48 +27,49 @@ class ReelDataResponse(BaseModel):
 
 
 
-BUCKET_NAME = "videos"
 # Define high-quality neural voices for English and Bangla
 VOICE_MAPPING = {
     "en": "en-US-ChristopherNeural",        # Clean, modern English voice
     "bn": "bn-BD-PradeepNeural"   # Natural-sounding Bangla (Bangladesh) voice
 }
 
+# Local directory for saving generated audio files
+LOCAL_AUDIO_DIR = os.path.join(os.path.dirname(__file__), "temp-text-to-reel")
+LOCAL_AUDIO_FILENAME = "text_to_reel_audio.mp3"
+
 async def generate_voiceover(script: ScriptResponse, language: str) -> ReelDataResponse:
     """
-    Generates audio in memory using edge-tts and directly uploads/overwrites 
-    it in Supabase Storage without creating local temporary files. Creates
-    ReelDataResponse with timing data and captions.
+    Generates audio in memory using edge-tts and saves it locally to the
+    backend/temp-text-to-reel/ folder (overwriting any previous file).
+    Creates ReelDataResponse with timing data and captions.
     """
     # 1. Combine all spoken texts smoothly
     full_text = "\n\n".join([block.spoken_text for block in script.story_blocks])
     voice = VOICE_MAPPING.get(language, "en-US-ChristopherNeural")
-    
+
     # 2. Compile audio chunks directly into a bytearray in memory
     communicate = edge_tts.Communicate(text=full_text, voice=voice, rate="+25%", boundary="WordBoundary")
     audio_bytes = bytearray()
     word_boundaries = []  # To track word-level timing for captions
-    
+
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
             audio_bytes.extend(chunk["data"])
         elif chunk["type"] == "WordBoundary":
             word_boundaries.append(chunk)
-            
-    # 3. Convert bytearray to immutable bytes for the Supabase SDK
+
+    # 3. Convert bytearray to immutable bytes
     final_bytes = bytes(audio_bytes)
-    
-    # 4. Upload straight to Supabase (using upsert=true to overwrite the same file)
-    target_path = "text_to_reel_audio.mp3"
-    
-    supabase.storage.from_(BUCKET_NAME).upload(
-        path=target_path,
-        file=final_bytes,
-        file_options={"content-type": "audio/mpeg", "upsert": "true"}
-    )
-    
-    # 5. Optional: Return the public URL if you need to play it back in the frontend
-    public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(target_path)
+
+    # 4. Save audio locally (overwrite previous file)
+    os.makedirs(LOCAL_AUDIO_DIR, exist_ok=True)
+    local_file_path = os.path.join(LOCAL_AUDIO_DIR, LOCAL_AUDIO_FILENAME)
+    with open(local_file_path, "wb") as f:
+        f.write(final_bytes)
+
+    # 5. Return an absolute URL pointing to the FastAPI-served audio file
+    backend_base_url = os.getenv("BACKEND_PUBLIC_URL", "http://127.0.0.1:8000").rstrip("/")
+    public_url = f"{backend_base_url}/temp-text-to-reel/{LOCAL_AUDIO_FILENAME}"
 
     # Generate 3 word chunk captions based on word boundaries
     captions = []
