@@ -9,6 +9,7 @@ import {
   Laugh,
   Sun,
   Moon,
+  Settings,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -100,6 +101,16 @@ export default function Navbar() {
               </Link>
             ))}
 
+            {/* Settings */}
+            <Link
+              to="/brand-consistency"
+              aria-label="Settings"
+              title="Settings"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -170,6 +181,13 @@ export default function Navbar() {
                 {feature.name}
               </Link>
             ))}
+            <Link
+              to="/brand-consistency"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-2.5 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+            >
+              Settings
+            </Link>
           </nav>
         )}
       </header>
