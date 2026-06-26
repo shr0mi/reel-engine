@@ -211,27 +211,29 @@ export default function GenerateMeme() {
     };
 
     return (
-  <div className="min-h-screen bg-white text-slate-900">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
 
-        <Navbar/>
-            
+            <Navbar />
+
             <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
 
                 {/* Header */}
                 <div className="space-y-1 mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">Generate Meme</h1>
-                    <p className="text-sm text-slate-500">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        Generate Meme
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
                         Create brand-aligned memes with AI-powered captions
                     </p>
                 </div>
 
                 {status === "success" && memeData ? (
                     <div className="space-y-6">
-                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold text-slate-800 mb-4">Generated Meme</h2>
+                        <div className="rounded-xl border border-border bg-card text-card-foreground p-6 shadow-sm transition-colors duration-300">
+                            <h2 className="text-lg font-semibold text-foreground mb-4">Generated Meme</h2>
 
                             {/* Meme with overlay text */}
-                            <div className="flex justify-center bg-slate-50 rounded-lg p-4">
+                            <div className="flex justify-center bg-muted rounded-lg p-4">
                                 <div style={{ position: "relative", display: "inline-block", maxWidth: "100%", minWidth: "600px" }}>
                                     <img
                                         src={displayImageSrc}
@@ -307,7 +309,7 @@ export default function GenerateMeme() {
 
                             {/* Template label */}
                             {memeData.selected_template && (
-                                <p className="text-xs text-slate-400 mt-2 text-center">
+                                <p className="text-xs text-muted-foreground mt-2 text-center">
                                     Template: {memeData.selected_template.replace(/_/g, " ")}
                                 </p>
                             )}
@@ -317,7 +319,7 @@ export default function GenerateMeme() {
                                 <button
                                     onClick={downloadMeme}
                                     disabled={isDownloading}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-100 bg-slate-900 hover:bg-slate-700 disabled:opacity-60 disabled:pointer-events-none transition-colors shadow-sm"
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none transition-colors shadow-sm"
                                 >
                                     {isDownloading ? (
                                         <><Loader2 className="w-4 h-4 animate-spin" />Downloading...</>
@@ -327,7 +329,7 @@ export default function GenerateMeme() {
                                 </button>
                                 <button
                                     onClick={resetForm}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors shadow-sm"
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-secondary-foreground bg-secondary hover:bg-accent transition-colors shadow-sm"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                     Generate Another
@@ -336,31 +338,31 @@ export default function GenerateMeme() {
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-border bg-card text-card-foreground p-6 shadow-sm transition-colors duration-300">
                         <form onSubmit={handleGenerateMeme} className="space-y-6">
 
                             {/* Topic Prompt */}
                             <div className="space-y-2">
-                                <label className="block text-sm font-medium text-slate-700">
-                                    Topic Prompt <span className="text-slate-500">*</span>
+                                <label className="block text-sm font-medium text-foreground">
+                                    Topic Prompt <span className="text-muted-foreground">*</span>
                                 </label>
                                 <textarea
                                     value={topicPrompt}
                                     onChange={(e) => setTopicPrompt(e.target.value)}
                                     placeholder="e.g., Late night hunger hitting again after dinner..."
-                                    className="w-full h-24 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-y transition-all"
+                                    className="w-full h-24 px-3 py-2 rounded-lg border border-input bg-secondary/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-y transition-all"
                                 />
                             </div>
 
                             {/* Image Upload */}
                             <div className="space-y-2">
-                                <label className="block text-sm font-medium text-slate-700">
-                                    Image <span className="text-slate-400 font-normal">(optional — uses template if omitted)</span>
+                                <label className="block text-sm font-medium text-foreground">
+                                    Image <span className="text-muted-foreground font-normal">(optional — uses template if omitted)</span>
                                 </label>
                                 {!previewUrl ? (
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-slate-200 hover:border-slate-400 transition-colors rounded-lg p-8 flex flex-col items-center justify-center gap-2 cursor-pointer bg-slate-50 hover:bg-slate-100"
+                                        className="border-2 border-dashed border-border hover:border-muted-foreground transition-colors rounded-lg p-8 flex flex-col items-center justify-center gap-2 cursor-pointer bg-secondary/50 hover:bg-secondary"
                                     >
                                         <input
                                             type="file"
@@ -369,17 +371,17 @@ export default function GenerateMeme() {
                                             accept="image/*"
                                             className="hidden"
                                         />
-                                        <ImageIcon className="h-8 w-8 text-slate-400" />
-                                        <p className="text-sm font-medium text-slate-700">Click to upload</p>
-                                        <p className="text-xs text-slate-500">PNG, JPG up to 10MB</p>
+                                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                        <p className="text-sm font-medium text-foreground">Click to upload</p>
+                                        <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <div className="rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center max-h-48">
+                                        <div className="rounded-lg overflow-hidden bg-secondary flex items-center justify-center max-h-48">
                                             <img src={previewUrl} alt="Preview" className="max-w-full max-h-48 object-contain" />
                                         </div>
                                         <div className="flex gap-2 items-center">
-                                            <p className="text-xs text-slate-600 flex-1 truncate">{imageFile?.name}</p>
+                                            <p className="text-xs text-muted-foreground flex-1 truncate">{imageFile?.name}</p>
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -387,7 +389,7 @@ export default function GenerateMeme() {
                                                     setPreviewUrl(null);
                                                     if (fileInputRef.current) fileInputRef.current.value = "";
                                                 }}
-                                                className="text-xs px-2 py-1 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors shrink-0"
+                                                className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-accent transition-colors shrink-0"
                                             >
                                                 Remove
                                             </button>
@@ -398,16 +400,16 @@ export default function GenerateMeme() {
 
                             {/* Error */}
                             {status === "error" && errorMessage && (
-                                <div className="rounded-lg bg-slate-100 border border-slate-200 p-3">
-                                    <p className="text-sm text-slate-700">{errorMessage}</p>
+                                <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+                                    <p className="text-sm text-destructive">{errorMessage}</p>
                                 </div>
                             )}
 
                             {/* Loading */}
                             {status === "generating" && (
-                                <div className="rounded-lg bg-slate-100 border border-slate-200 p-4 flex items-center gap-3">
-                                    <Loader2 className="h-5 w-5 text-slate-700 animate-spin" />
-                                    <p className="text-sm text-slate-700 font-medium">Generating your meme...</p>
+                                <div className="rounded-lg bg-secondary border border-border p-4 flex items-center gap-3">
+                                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
+                                    <p className="text-sm text-foreground font-medium">Generating your meme...</p>
                                 </div>
                             )}
 
@@ -416,7 +418,7 @@ export default function GenerateMeme() {
                                 <button
                                     type="submit"
                                     disabled={status === "generating" || !topicPrompt.trim()}
-                                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-900 bg-slate-200 hover:bg-slate-300 disabled:opacity-50 disabled:pointer-events-none transition-colors shadow-sm"
+                                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors shadow-sm"
                                 >
                                     {status === "generating" ? (
                                         <><Loader2 className="w-4 h-4 animate-spin" />Generating...</>

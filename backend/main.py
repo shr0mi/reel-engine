@@ -257,20 +257,22 @@ async def receive_b_roll_results(segments: List[Segment]):
 # Mister_Memer
 
 async def get_brand_summary() -> str:
-    response = (
-        supabase.table("brand_profiles")
-        .select("what_brand_does, who_are_customers, what_customers_like")
-        .eq("id", 1)
-        .execute()
-    )
+    from db import get_db
 
-    if not response.data:
+    with get_db() as (_, cur):
+        cur.execute(
+            "SELECT what_brand_does, who_are_customers, what_customers_like "
+            "FROM brand_profiles WHERE id = ?",
+            (1,),
+        )
+        row = cur.fetchone()
+
+    if row is None:
         raise HTTPException(status_code=404, detail="Brand profile not found.")
 
-    profile = response.data[0]
-    return (f"{profile.get('what_brand_does', '').strip()} | "
-    f"{profile.get('who_are_customers', '').strip()} | "
-    f"{profile.get('what_customers_like', '').strip()}"
+    return (f"{(row['what_brand_does'] or '').strip()} | "
+            f"{(row['who_are_customers'] or '').strip()} | "
+            f"{(row['what_customers_like'] or '').strip()}"
     )
 
 
