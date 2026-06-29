@@ -28,11 +28,6 @@ from routers import brand_agent_router, text_to_reel_router, product_ads_router
 
 load_dotenv()
 
-# 1. Initialize Supabase Client
-# In production, use os.environ.get("SUPABASE_URL") after loading a dotenv file.
-from database import supabase
-BUCKET_NAME = "videos"
-
 app = FastAPI()
 
 app.add_middleware(

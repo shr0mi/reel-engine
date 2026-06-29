@@ -6,7 +6,7 @@ from typing import Any, Literal, List
 from reelWriterAgent import generate_reel_script, ScriptResponse
 from text_to_reel_tts import generate_voiceover, ReelDataResponse, StoryBlockTiming
 import os
-import sqlite3
+import json
 
 class ScriptRequest(BaseModel):
     prompt: str = Field(default="", description="The specific topic or concept. Leave blank for a random generation.")
@@ -17,6 +17,48 @@ router = APIRouter(
     tags=['text to reel']
 )
 
+# Local "phonk" directory used as a stand-in for the previous remote DB.
+# Brand profile metadata is expected at: backend/temp-phonks/brand_profiles.json
+PHONK_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "temp-phonks",
+)
+BRAND_PROFILE_PATH = os.path.join(PHONK_DIR, "brand_profiles.json")
+
+
+def _load_brand_profile(profile_id: int = 1) -> dict:
+    """
+    Reads the primary brand profile from backend/temp-phonks/brand_profiles.json.
+
+    The file is expected to be a JSON array of objects, e.g.:
+        [
+            {
+                "id": 1,
+                "brand_name": "Acme",
+                "tone": "high-energy",
+                ...
+            }
+        ]
+    """
+    if not os.path.isfile(BRAND_PROFILE_PATH):
+        raise HTTPException(
+            status_code=404,
+            detail="Primary brand profile record missing from temp-phonks directory.",
+        )
+
+    with open(BRAND_PROFILE_PATH, "r", encoding="utf-8") as fp:
+        profiles = json.load(fp)
+
+    for profile in profiles:
+        if profile.get("id") == profile_id:
+            return profile
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Brand profile with id={profile_id} not found in temp-phonks.",
+    )
+
+
 @router.get("/test")
 def test():
     return {"message": "Text to Reel router is working!"}
@@ -24,28 +66,12 @@ def test():
 @router.post("/generate-script", response_model=ScriptResponse)
 async def create_reel_script(request: ScriptRequest):
     """
-    Fetches brand configuration data from the local brand_profile.db SQLite
-    database and hands it over to the PydanticAI wrapper engine to output a
-    production-ready script.
+    Loads brand configuration data from the local temp-phonks metadata file
+    (previously fetched from Supabase) and hands it over to the PydanticAI
+    wrapper engine to output a production-ready script.
     """
-    # 1. Fetch brand context from local SQLite (ID = 1)
-    db_path = os.path.join(os.path.dirname(__file__), "..", "brand_profile.db")
-    conn = sqlite3.connect(db_path)
-    try:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM brand_profiles WHERE id = ?",
-            (1,),
-        )
-        row = cursor.fetchone()
-    finally:
-        conn.close()
-
-    if row is None:
-        raise HTTPException(status_code=404, detail="Primary brand profile record missing from local DB.")
-
-    brand_data = dict(row)
+    # 1. Load brand context from local temp-phonks metadata (ID = 1)
+    brand_data = _load_brand_profile(profile_id=1)
 
     try:
         # 2. Invoke the PydanticAI execution loop

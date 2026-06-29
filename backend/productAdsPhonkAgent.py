@@ -2,7 +2,6 @@ import os
 from typing import Any, Dict
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
-from database import supabase  # Your initialized Supabase client
 from dotenv import load_dotenv
 
 # Load environment variables from .env file immediately
